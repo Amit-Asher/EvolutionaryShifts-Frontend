@@ -5,8 +5,10 @@ import {
   CssBaseline,
   ThemeProvider,
 } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 import Paperbase from "./components/Paperbase";
 import NewArrangementPage from "./pages/NewArrangementPage";
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 let theme = createTheme({
   palette: {
@@ -153,9 +155,11 @@ theme = {
 
 function App() {
   return (
-    <div className="App">
-      <Paperbase />
-    </div>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <div className="App">
+        <Paperbase />
+      </div>
+    </LocalizationProvider>
   );
 }
 

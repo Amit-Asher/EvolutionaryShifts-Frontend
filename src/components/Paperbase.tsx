@@ -9,6 +9,7 @@ import Navigator from "./Navigator";
 import Content from "./Content";
 import Header from "./Header";
 import EmployeesPage from "../pages/EmployeesPage";
+import NewArrangementPage from "../pages/NewArrangementPage";
 
 function Copyright() {
   return (
@@ -211,7 +212,8 @@ export default function Paperbase() {
             sx={{ flex: 1, py: 6, px: 4, bgcolor: "#eaeff1" }}
           >
             {/* <Content /> */}
-            <EmployeesPage />
+            {/* <EmployeesPage /> */}
+            <NewArrangementPage />
           </Box>
 
           {/* ************************* FOOTER ***********************  */}
