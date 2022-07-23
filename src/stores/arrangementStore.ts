@@ -1,56 +1,83 @@
-import { PropertiesDTO, ReqSlotDTO, RoleDTO, RuleWeightDTO } from './../swagger/stubs/api';
-import { action, makeObservable, observable, set } from "mobx"
+import { ReqSlotCell } from './../components/TimeTable/TimeTable';
+import { PropertiesDTO, ReqSlotDTO, RoleDTO, RuleWeightDTO, RangeDTO } from './../swagger/stubs/api';
+import { action, computed, makeAutoObservable, makeObservable, observable, set, toJS } from "mobx"
+import { Day } from '../interfaces/common';
 
+interface RuleSelection {
+    ruleName: string;
+    weight: number;
+    enable: boolean;
+}
+
+// holds all the state related to create new arrangement flow
 export class ArrangementStore {
 
     @observable
-    public properties: PropertiesDTO = {
-        activeEmployeesIds: [],
-        reqSlots: [],
-        rulesWeights: []
-    };
+    public activeEmployeesIds: string[] = [];
+
+    @observable
+    public reqSlots: ReqSlotCell[] = [];
+
+    @observable
+    public selectedRules: RuleSelection[] = [];
 
     constructor() {
-        makeObservable(this)
+        makeAutoObservable(this, {}, { autoBind: true })
     }
 
     @action
     public setEmployeeAsActive(employeeId?: string) {
-        const isEmployeeActive = this.properties?.activeEmployeesIds?.some(activeEmployeeId => activeEmployeeId === employeeId);
+        const isEmployeeActive = this.activeEmployeesIds?.some(activeEmployeeId => activeEmployeeId === employeeId);
 
         if (employeeId && !isEmployeeActive) {
-            this.properties.activeEmployeesIds?.push(employeeId);
+            this.activeEmployeesIds?.push(employeeId);
         }
     }
 
     @action
     public unsetEmployeeAsActive(employeeId?: string) {
-        this.properties.activeEmployeesIds = this.properties.activeEmployeesIds?.filter(empId => empId !== employeeId);
+        this.activeEmployeesIds = this.activeEmployeesIds?.filter(empId => empId !== employeeId);
     }
 
     @action
-    public setReqSlot(reqSlot: ReqSlotDTO) {
-
-        // TODO: improve error handling
-        const isReqSlotExist = this.properties.reqSlots?.some(existingReqSlot => (
-            existingReqSlot.startTime === reqSlot.startTime && existingReqSlot.role !== reqSlot.role)
-        );
-
-        if (!isReqSlotExist) {
-            this.properties.reqSlots?.push(reqSlot);
-        }
-    }
-
-    @action
-    public unsetReqSlot(startTime: string, role: string) {
-        this.properties.reqSlots = this.properties.reqSlots?.filter(reqSlot => reqSlot.startTime !== startTime || reqSlot.role !== role);
+    public setReqSlots(reqSlots: ReqSlotCell[]) {
+        this.reqSlots = reqSlots;
+        console.log(`this.reqSlots: ${JSON.stringify(this.reqSlots, undefined, 2)}`)
     }
 
     @action
     public setRuleWeight(rule: string, weight: number) {
-        const newRuleWeight: RuleWeightDTO = { ruleName: rule, weight };
-        this.properties.rulesWeights = this.properties.rulesWeights?.filter(curRuleWeight => curRuleWeight.ruleName !== newRuleWeight.ruleName);
-        this.properties.rulesWeights?.push(newRuleWeight);
+        // remove old
+        this.selectedRules = this.selectedRules?.filter(selectedRule => selectedRule.ruleName !== rule);
+        // add new (always overide)
+        this.selectedRules?.push({
+            ruleName: rule,
+            weight: weight ?? 0,
+            enable: true
+        });
     }
 
+    @action
+    public enableRule(rule: string) {
+        const selectedRule = this.selectedRules?.find(selectedRule => selectedRule.ruleName === rule);
+
+        if (selectedRule) { // rule found
+            selectedRule.enable = true;
+            return;
+        }
+
+        this.selectedRules.push({
+            ruleName: rule,
+            weight: 0,
+            enable: true
+        });
+    }
+
+    @action
+    public disableRule(rule: string) {
+        const selectedRule = this.selectedRules?.find(selectedRule => selectedRule.ruleName === rule);
+        if (selectedRule) { // rule found
+            selectedRule.enable = false;
+        }
+    }
 }
