@@ -1,15 +1,11 @@
 import {
-  Box,
   Button,
   Checkbox,
-  CircularProgress,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
-  MenuItem,
   Paper,
-  Select,
   TextField,
 } from "@mui/material";
 import { ArrangementStore } from "../stores/arrangementStore";
@@ -22,10 +18,14 @@ import TimeTable from "../components/TimeTable/TimeTable";
 import Typography from "@mui/material/Typography";
 import { ComponentStatus } from "../interfaces/common";
 import { companyService } from "../services/companyService";
+import { LoadingPaper } from "../components/Loading/LoadingPaper";
+import { arrangementService } from "../services/arrangementService";
+import { useNavigate } from 'react-router-dom';
+import { PagesUrl } from "../interfaces/pages.meta";
 
-// functional component
-function NewArrangementPage() {
+export const NewArrangementPage = observer(() => {
   const arrangementStore: ArrangementStore = globalStore.arrangementStore;
+  const navigate = useNavigate();
   const [allRoles, setAllRoles] = useState<string[]>([]);
   const [allEmployees, setAllEmployees] = useState<EmployeeDTO[]>([]);
   const [allRules, setAllRules] = useState<string[]>([]);
@@ -35,32 +35,18 @@ function NewArrangementPage() {
 
   useEffect(() => {
     const fetchRoles = async () => {
-      // 'await' send http request to get roles + employees + rules
-      companyService.getEmployees();
-      setAllRoles(mock.roles);
-      setAllEmployees(mock.employees);
-      setAllRules(mock.rules);
+      const employees: EmployeeDTO[] = await companyService.getEmployees();
+      const roles: string[] = await companyService.getRoles();
+      setAllRoles(roles);
+      setAllEmployees(employees);
+      setAllRules(mock.rules); // TODO: add route to api and get rules metadata from there
       setIsLoading(ComponentStatus.READY);
     };
     fetchRoles();
   }, []);
 
   if (isLoading) {
-    return (
-      <Paper
-        sx={{ margin: "auto", overflow: "hidden" }}
-        style={{
-          height: "100%",
-          justifyContent: "center",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <Box sx={{ display: "flex" }}>
-          <CircularProgress />
-        </Box>
-      </Paper>
-    );
+    return <LoadingPaper />;
   }
 
   return (
@@ -80,6 +66,7 @@ function NewArrangementPage() {
           marginRight: "100px",
         }}
       >
+        {/* TITLE */}
         <div
           style={{
             width: "100%",
@@ -88,8 +75,8 @@ function NewArrangementPage() {
             margin: "20px 5px 5px 5px",
           }}
         >
+          {/* SELECT ALL */}
           <Checkbox
-            style={{}}
             onChange={(e) => {
               if (e.target.checked) {
                 allEmployees?.forEach((emp) =>
@@ -139,7 +126,7 @@ function NewArrangementPage() {
         </List>
       </div>
 
-      {/* Rules weights */}
+      {/* RULE WEIGHTS */}
       <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
         {allRules?.map((rule: string) => {
           const labelId = `rule-${rule}`;
@@ -176,17 +163,21 @@ function NewArrangementPage() {
           );
         })}
       </List>
+
+      {/* CREATE BUTTON */}
       <div style={{ display: "flex", float: "right", padding: "40px" }}>
         <Button
           variant="contained"
           color="secondary"
           style={{ height: "50px", width: "100px" }}
+          onClick={() => {
+            arrangementService.sendProperties(arrangementStore.properties);
+            navigate(PagesUrl.Arrangement_Status);
+          }}
         >
           Create
         </Button>
       </div>
     </Paper>
   );
-}
-
-export default observer(NewArrangementPage);
+});

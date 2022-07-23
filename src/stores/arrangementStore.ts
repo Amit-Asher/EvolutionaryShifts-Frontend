@@ -1,7 +1,7 @@
 import { ReqSlotCell } from './../components/TimeTable/TimeTable';
 import { PropertiesDTO, ReqSlotDTO, RoleDTO, RuleWeightDTO, RangeDTO } from './../swagger/stubs/api';
 import { action, computed, makeAutoObservable, makeObservable, observable, set, toJS } from "mobx"
-import { Day } from '../interfaces/common';
+import moment from 'moment';
 
 interface RuleSelection {
     ruleName: string;
@@ -79,5 +79,35 @@ export class ArrangementStore {
         if (selectedRule) { // rule found
             selectedRule.enable = false;
         }
+    }
+
+    @computed
+    public get properties(): PropertiesDTO {
+
+        // build rules weights
+        const rulesWeights: RuleWeightDTO[] = this.selectedRules
+            .filter(selectedRule => selectedRule.enable)
+            .map(selectedRule => ({
+                ruleName: selectedRule.ruleName,
+                weight: selectedRule.weight
+            }));
+
+        // build req slots
+        const reqSlotsDto: ReqSlotDTO[] = this.reqSlots
+            .map((reqSlot: ReqSlotCell) => ({
+                startTime: moment(reqSlot.startDate).format('YYYY-MM-DD HH:mm'),
+                endTime: moment(reqSlot.endDate).format('YYYY-MM-DD HH:mm'),
+                role: reqSlot.role,
+                personnelSize: {
+                    max: reqSlot.maxPersonnelSize,
+                    min: reqSlot.minPersonnelSize
+                },
+            }))
+
+        return {
+            rulesWeights,
+            activeEmployeesIds: this.activeEmployeesIds,
+            reqSlots: reqSlotsDto
+        };
     }
 }

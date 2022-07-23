@@ -1,30 +1,48 @@
-import { EmployeeDTO, RoleDTO, CompanyApi, EmployeeApi } from './../swagger/stubs/api';
+import { globalStore } from './../stores/globalStore';
+import { EmployeeDTO, RoleDTO, CompanyApi, EmployeeApi, RoleApi } from './../swagger/stubs/api';
 
 class CompanyService {
 
     employeesCache: EmployeeDTO[] = [];
-    rolesCache: RoleDTO[] = [];
+    rolesCache: string[] = [];
 
     constructor() {
     }
 
-    public getEmployees(): EmployeeDTO[] {
+    public async getEmployees(): Promise<EmployeeDTO[]> {
         try {
-            const res = (new EmployeeApi()).getAllEmployeesUsingGET();
-            console.log(`res: ${JSON.stringify(res, undefined, 2)}`)
+            if (this.employeesCache.length === 0) {
+                const res = await (new EmployeeApi()).getAllEmployees();
+                if (!res) {
+                    globalStore.notificationStore.show({ message: 'Failed to fetch employees' });
+                    return [];
+                }
+                this.employeesCache = res.employees ?? [];
+            }
+            return this.employeesCache ?? [];
         } catch (err) {
-
+            globalStore.notificationStore.show({ message: 'Failed to fetch employees' });
+            console.error('[companyService][getEmployees] Failed to fetch employees');
+            return this.employeesCache ?? [];
         }
-        return [];
     }
 
-    public getRoles(): RoleDTO[] {
+    public async getRoles(): Promise<string[]> {
         try {
-
+            if (this.rolesCache.length === 0) {
+                const res = await (new RoleApi()).getAllRoles();
+                if (!res) {
+                    globalStore.notificationStore.show({ message: 'Failed to fetch employees roles' });
+                    return [];
+                }
+                this.rolesCache = res.names ?? [];
+            }
+            return this.rolesCache ?? [];
         } catch (err) {
-
+            console.error('[companyService][getRoles] Failed to fetch employees roles');
+            globalStore.notificationStore.show({ message: 'Failed to fetch employees roles' });
+            return this.rolesCache ?? [];
         }
-        return [];
     }
 }
 

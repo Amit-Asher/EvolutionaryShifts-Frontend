@@ -1,34 +1,38 @@
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import HelpIcon from '@mui/icons-material/Help';
-import IconButton from '@mui/material/IconButton';
-import Link from '@mui/material/Link';
-import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
+import Grid from "@mui/material/Grid";
+import HelpIcon from "@mui/icons-material/Help";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import Toolbar from "@mui/material/Toolbar";
+import Tooltip from "@mui/material/Tooltip";
+import { useLocation, useNavigate } from "react-router-dom";
+import { SubTab } from "../../interfaces/pages.meta";
+import { observer } from "mobx-react";
 
-const lightColor = 'rgba(255, 255, 255, 0.7)';
+const lightColor = "rgba(255, 255, 255, 0.7)";
 
-export default function Header(props: any) {
+interface HeaderProps {
+  subTabs: SubTab[];
+}
+
+export const Header = observer((props: HeaderProps) => {
+  const navigate = useNavigate();
+  const location = useLocation().pathname;
 
   return (
     <React.Fragment>
       <AppBar color="primary" position="sticky" elevation={0}>
         <Toolbar>
           <Grid container spacing={1} alignItems="center">
-            <Grid sx={{ display: { sm: 'none', xs: 'block' } }} item>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-              >
+            <Grid sx={{ display: { sm: "none", xs: "block" } }} item>
+              <IconButton color="inherit" aria-label="open drawer" edge="start">
                 <MenuIcon />
               </IconButton>
             </Grid>
@@ -38,10 +42,10 @@ export default function Header(props: any) {
                 href="/"
                 variant="body2"
                 sx={{
-                  textDecoration: 'none',
+                  textDecoration: "none",
                   color: lightColor,
-                  '&:hover': {
-                    color: 'common.white',
+                  "&:hover": {
+                    color: "common.white",
                   },
                 }}
                 rel="noopener noreferrer"
@@ -74,8 +78,7 @@ export default function Header(props: any) {
       >
         <Toolbar>
           <Grid container alignItems="center" spacing={1}>
-            <Grid item xs>
-            </Grid>
+            <Grid item xs></Grid>
             <Grid item>
               <Button
                 sx={{ borderColor: lightColor }}
@@ -96,15 +99,30 @@ export default function Header(props: any) {
           </Grid>
         </Toolbar>
       </AppBar>
-      <AppBar component="div" position="static" elevation={0} sx={{ zIndex: 0 }}>
-        <Tabs value={0} textColor="inherit">
-          <Tab label="New Arrangement" />
-          <Tab label="Insert Properties" />
-          <Tab label="Status" />
-          <Tab label="Evolution Engine" />
-          <Tab label="Publish" />
+      <AppBar
+        component="div"
+        position="static"
+        elevation={0}
+        sx={{ zIndex: 0 }}
+      >
+        <Tabs
+          value={
+            props.subTabs.find((subtab) => subtab.url === location)?.idx ?? 0
+          }
+          textColor="inherit"
+        >
+          {props.subTabs.map((subtab: SubTab) => {
+            return (
+              <Tab
+                onClick={() => {
+                  navigate(subtab.url);
+                }}
+                label={subtab.label}
+              ></Tab>
+            );
+          })}
         </Tabs>
       </AppBar>
     </React.Fragment>
   );
-}
+});
