@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 
 export const PreferencesPage = observer(() => {
   return (
-    <Paper sx={{ maxWidth: 936, margin: 'auto', overflow: 'hidden', height: '100%' }}>
+    <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
         Preferences
     </Paper>
   );

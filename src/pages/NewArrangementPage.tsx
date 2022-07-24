@@ -29,7 +29,7 @@ export const NewArrangementPage = observer(() => {
   const [allRoles, setAllRoles] = useState<string[]>([]);
   const [allEmployees, setAllEmployees] = useState<EmployeeDTO[]>([]);
   const [allRules, setAllRules] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState<ComponentStatus>(
+  const [status, setStatus] = useState<ComponentStatus>(
     ComponentStatus.LOADING
   );
 
@@ -40,14 +40,16 @@ export const NewArrangementPage = observer(() => {
       setAllRoles(roles);
       setAllEmployees(employees);
       setAllRules(mock.rules); // TODO: add route to api and get rules metadata from there
-      setIsLoading(ComponentStatus.READY);
+      setStatus(ComponentStatus.READY);
     };
     fetchRoles();
   }, []);
 
-  if (isLoading) {
+  if (status !== ComponentStatus.READY) {
     return <LoadingPaper />;
   }
+
+  console.log(`arrangementStore.reqSlots: ${JSON.stringify(arrangementStore.reqSlots, undefined, 2)}`)
 
   return (
     <Paper sx={{ margin: "auto", overflow: "hidden" }}>

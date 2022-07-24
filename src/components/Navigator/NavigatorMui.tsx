@@ -29,7 +29,7 @@ const categories = [
   {
     id: 'Business',
     children: [
-      { id: 'Premuim', icon: <WorkspacePremiumIcon /> },
+      { id: 'Premuim', icon: <WorkspacePremiumIcon sx={{ color: '#ECB365'}} /> },
       { id: 'Contact us', icon: <MailOutlineOutlinedIcon /> },
     ],
   },
@@ -55,7 +55,7 @@ export default function NavigatorMui(props: DrawerProps) {
 
   return (
     <Drawer variant="permanent" {...other}>
-      <List disablePadding>
+      <List disablePadding style={{ marginTop: '20px' }}>
         <ListItem sx={{ ...item, ...itemCategory, fontSize: 22, color: '#fff' }}>
           Evolutionary Shifts
         </ListItem>
@@ -76,7 +76,7 @@ export default function NavigatorMui(props: DrawerProps) {
               <ListItem disablePadding key={childId}>
                 <ListItemButton selected={active} sx={item}>
                   <ListItemIcon>{icon}</ListItemIcon>
-                  <ListItemText>{childId}</ListItemText>
+                  <ListItemText {...(childId === 'Premuim' && { style: { color: '#ECB365' }})}>{childId}</ListItemText>
                 </ListItemButton>
               </ListItem>
             ))}

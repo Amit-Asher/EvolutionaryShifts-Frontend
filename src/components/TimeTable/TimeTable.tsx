@@ -5,7 +5,7 @@ import DevExpressTimeTable from "./DevExpressTimeTable";
 interface TimeTableProps {
     views: string[];
     slots: ReqSlotCell[];
-    setSlots: (reqSlots: ReqSlotCell[]) => void;
+    setSlots?: (reqSlots: ReqSlotCell[]) => void;
 }
 
 export interface ReqSlotCell {
@@ -25,7 +25,7 @@ function TimeTable(props: TimeTableProps) {
       <DevExpressTimeTable
         views={props.views ?? []}
         slots={props.slots ?? []}
-        setSlots={props.setSlots}
+        setSlots={props?.setSlots}
       />
   );
 }

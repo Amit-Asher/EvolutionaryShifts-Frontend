@@ -2,6 +2,8 @@ import { EmployeePreferencesDTO, EmpSlotsPreferenceDTO } from './../swagger/stub
 import { PrfSlotDTO } from "../swagger/stubs";
 
 export interface EmployeeStatus {
-    empPref: EmpSlotsPreferenceDTO;
+    employeeId: string;
+    employeeName: string;
+    employeeSlots: PrfSlotDTO[]
     roles: string[];
 }

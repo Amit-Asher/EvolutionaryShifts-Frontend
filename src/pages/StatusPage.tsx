@@ -1,7 +1,8 @@
+import { MenuItem, Select } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import { observer } from "mobx-react";
 import moment from "moment";
-import { useEffect, useState } from "react";
+import { Component, useEffect, useState } from "react";
 import { LoadingPaper } from "../components/Loading/LoadingPaper";
 import TimeTable from "../components/TimeTable/TimeTable";
 import { EmployeeStatus } from "../interfaces/arrangement.interfaces";
@@ -10,76 +11,78 @@ import { arrangementService } from "../services/arrangementService";
 import { companyService } from "../services/companyService";
 import { globalStore } from "../stores/globalStore";
 import {
-  EmployeeDTO,
-  EmpSlotsPreferenceDTO,
-  PrfSlotDTO,
+    EmployeeDTO,
+    EmpSlotsPreferenceDTO,
+    PrfSlotDTO,
 } from "../swagger/stubs";
 
 export const StatusPage = observer(() => {
-  const arrangementStore = globalStore.arrangementStore;
-  const [employeeStatus, setEmployeeStatus] = useState<EmployeeStatus[]>([]);
-  const [curEmployee, setCurEmployee] = useState<EmployeeStatus | undefined>();
-  const [isLoading, setIsLoading] = useState<ComponentStatus>(
-    ComponentStatus.LOADING
-  );
-  let count = 1;
+    const arrangementStore = globalStore.arrangementStore;
+    const [employeesStatus, setEmployeesStatus] = useState<EmployeeStatus[]>([]);
+    const [curEmployee, setCurEmployee] = useState<EmployeeStatus | undefined>();
+    const [status, setStatus] = useState<ComponentStatus>(ComponentStatus.LOADING);
+    let count = 0;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const allEmployees: EmployeeDTO[] = await companyService.getEmployees();
-      const allPreferences: EmpSlotsPreferenceDTO[] =
-        await arrangementService.getPreferences();
-      const employeesStatus: EmployeeStatus[] = allPreferences?.map(
-        (empPref) => ({
-          empPref,
-          roles:
-            allEmployees.find((emp) => emp.id === empPref.employeeId)?.roles ??
-            [],
-        })
-      );
-      setCurEmployee(employeeStatus[0]);
-      setEmployeeStatus(employeesStatus);
-      setIsLoading(ComponentStatus.READY);
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            const allEmployees: EmployeeDTO[] = await companyService.getEmployees();
+            const allPreferences: EmpSlotsPreferenceDTO[] = await arrangementService.getPreferences();
+            const employeesStatusToSet: EmployeeStatus[] = allPreferences?.map((empPref: EmpSlotsPreferenceDTO) => ({
+                employeeId: empPref?.employeeId ?? '',
+                employeeName: empPref?.employeeName ?? '',
+                roles: allEmployees.find((emp) => emp.id === empPref.employeeId)?.roles ?? [],
+                employeeSlots: empPref?.employeeSlots ?? []
+            })
+            );
+            setCurEmployee(employeesStatusToSet[0]);
+            setEmployeesStatus(employeesStatusToSet);
+            setStatus(ComponentStatus.READY);
+        };
 
-    fetchData();
-  }, []);
+        fetchData();
+    }, []);
 
-  const tst =
-    curEmployee?.empPref?.employeeSlots?.map((pref: PrfSlotDTO) => {
-      count = count + 1;
-      return {
-        id: count,
-        startDate: new Date(
-          moment(pref.startTime ?? "").format("YYYY-MM-DD HH:mm")
-        ), // moment(pref.startTime).format('YYYY-MM-DDTHH:mm'),  // "2022-07-19T12:00"
-        endDate: new Date(
-          moment(pref.endTime ?? "").format("YYYY-MM-DD HH:mm")
-        ), // moment(pref.startTime).format('YYYY-MM-DDTHH:mm'),  // "2022-07-19T12:00"
-        minPersonnelSize: 0,
-        maxPersonnelSize: 0,
-        title: "Prefered*", // by design, title is always "Prefered*"
-        role: pref.role ?? "",
-      };
+    const cellsOfTimeTable = curEmployee?.employeeSlots?.map((slot: PrfSlotDTO) => {
+        count = count + 1;
+        return {
+            id: count,
+            startDate: new Date(moment(slot.startTime ?? "").format("YYYY-MM-DD HH:mm")),
+            endDate: new Date(moment(slot.endTime ?? "").format("YYYY-MM-DD HH:mm")),
+            minPersonnelSize: 0,
+            maxPersonnelSize: 0,
+            title: "Prefered*", // by design, title is always "Prefered*"
+            role: slot.role ?? ""
+        }
     }) ?? [];
 
-  console.log(`tst: ${JSON.stringify(tst, undefined, 2)}`);
 
-  if (isLoading) {
-    return <LoadingPaper />;
-  }
+    if (status !== ComponentStatus.READY) {
+        return <LoadingPaper />;
+    }
 
-  return (
-    <Paper
-      sx={{ maxWidth: 936, margin: "auto", overflow: "hidden", height: "100%" }}
-    >
-      <div style={{ backgroundColor: "#fff", padding: "20px" }}>
-        <TimeTable
-          views={curEmployee?.roles ?? []}
-          slots={tst}
-          setSlots={arrangementStore.setReqSlots}
-        />
-      </div>
-    </Paper>
-  );
+    return (
+        <Paper sx={{ margin: "auto", overflow: "hidden", height: "100%" }}>
+            <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={curEmployee?.employeeName ?? ''}
+                label="Age"
+                onChange={(e) => {
+                    const employeeStatus = employeesStatus.find(employeeStatus => employeeStatus.employeeName === e.target.value);
+                    setCurEmployee(employeeStatus);
+                }}
+            >
+                {employeesStatus.map((empStatus: EmployeeStatus) => {
+                    return <MenuItem value={empStatus.employeeName}>{empStatus.employeeName}</MenuItem>;
+                })}
+            </Select>
+            <div style={{ backgroundColor: "#fff", padding: "20px" }}>
+                <TimeTable
+                    views={curEmployee?.roles ?? ['N/A']}
+                    slots={cellsOfTimeTable}
+                    setSlots={undefined}
+                />
+            </div>
+        </Paper>
+    );
 });
