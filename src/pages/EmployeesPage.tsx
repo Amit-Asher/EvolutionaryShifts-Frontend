@@ -35,6 +35,7 @@ import PhoneInput from 'react-phone-number-input'
 import { E164Number } from 'libphonenumber-js';
 import { Paper } from '@mui/material';
 import { observer } from 'mobx-react';
+import { EmployeeApi, EmployeeDTO, EmployeesDTO, NewEmployeeDTO } from '../swagger/stubs';
 
 const Root = styled('div')(
     ({ theme }) => `
@@ -194,6 +195,32 @@ const Rules = [
     { name: "CEO" },
 ];
 
+const sendNewEmployee = async (employee: Employee): Promise<void> => {
+    try {
+        // POST REQUEST
+        const res = await (new EmployeeApi()).addEmployee({
+            name: employee.name,
+            phoneNumber: employee.phone,
+            roles: employee.rules
+        });
+    } catch (err) {
+        console.log('failed to set employee');
+    }
+}
+
+const getEmployees = async (): Promise<EmployeeDTO[]> => {
+    try {
+        // GET REQUEST
+        const res: EmployeesDTO = await (new EmployeeApi()).getAllEmployees();
+        const employees: EmployeeDTO[] = res.employees ?? [];
+        console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
+        return employees;
+    } catch (err) {
+        console.log('failed to get employees');
+        return [];
+    }
+}
+
 
 
 
@@ -201,13 +228,13 @@ const Rules = [
 
 interface Employee {
     name: string;
-    phone: number;
+    phone: string;
     rules: string[];
 }
 
 function createEmployee(
     name: string,
-    phone: number,
+    phone: string,
     rules: string[]
 ): Employee {
     return {
@@ -260,11 +287,10 @@ var employees: Employee[] = [
 
 
     //need to GET requst from the server for all the employees and push them in "employees"
-
-    createEmployee('amit', 305, ["Teather", "Manager"]),
-    createEmployee('asher', 452, ["CEO", "runner", "Teather"]),
-    createEmployee('andrio', 262, ["Teather", "Manager"]),
-    createEmployee('michel', 159, ["CEO", "runner", "Teather"])
+    createEmployee('amit', '305', ["Teather", "Manager"]),
+    createEmployee('asher', '452', ["CEO", "runner", "Teather"]),
+    createEmployee('andrio', '262', ["Teather", "Manager"]),
+    createEmployee('michel', '159', ["CEO", "runner", "Teather"])
     // createEmployee('shali', 356, rulesss),
     // createEmployee('tzvi', 408, rulessss),
     // createEmployee('gadi', 237, rulesss),
@@ -464,6 +490,22 @@ export const EmployeesPage = observer(() => {
     const [dense, setDense] = React.useState(false);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
+
+    const [innerEmployees, setInnerEmployees] = React.useState<EmployeeDTO[]>([]);
+
+    const fetchEmployees = async () => {
+        const employeesFromServer = await getEmployees();
+        setInnerEmployees(employeesFromServer);
+    }
+
+    React.useEffect(() => {
+        fetchEmployees();
+    }, []);
+
+
+    // tip:
+    // manage all employees in a state inside the component here with useState
+
     const handleRequestSort = (
         event: React.MouseEvent<unknown>,
         property: keyof Employee,
@@ -550,7 +592,7 @@ export const EmployeesPage = observer(() => {
     };
 
 
-    const [valueNameEmp, setValueNameEmp] = React.useState("");
+    const [valueNameEmp, setValueNameEmp] = React.useState("AMIT");
 
     const handleChangeEmpName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
         setValueNameEmp(e.target.value);
@@ -588,14 +630,13 @@ export const EmployeesPage = observer(() => {
                 </div>
 
                 <Button id="addEmpButton" onClick={(event) => {
-
-
-                    employees.unshift(createEmployee(valueNameEmp, 305, ["CEO", "runner", "Teather"]));
+                    employees.unshift(createEmployee(valueNameEmp, '305', ["CEO", "runner", "Teather"]));
                     //need to send POST requst to server to add new employee
                     //then need to re-rander the table of the employees
-
-
-
+                    sendNewEmployee(employees[1]);
+                    // todo: set inner state
+                    // using the setters of useState will trigger re-render
+                    
                 }} variant="contained" disableElevation>Add Employee</Button>
 
 
@@ -684,6 +725,9 @@ export const EmployeesPage = observer(() => {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
             />
+            <Button onClick={() => console.log(getEmployees())}>
+                Get All Employees
+            </Button>
         </Paper>
     </>
     );
