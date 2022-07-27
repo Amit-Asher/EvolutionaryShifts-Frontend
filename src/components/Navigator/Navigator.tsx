@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import NavigatorMui from "./NavigatorMui";
 
 const drawerWidth = 256;

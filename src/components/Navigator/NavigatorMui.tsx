@@ -14,23 +14,27 @@ import HistoryIcon from '@mui/icons-material/History';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
+import { Button } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router';
+import { getBaseUrlByLocation, PagesUrl } from '../../interfaces/pages.meta';
+import { useState } from 'react';
 
 const categories = [
   {
     id: 'General',
     children: [
-      { id: 'Arrangement', icon: <CalendarMonthIcon />, active: true },
-      { id: 'Employees', icon: <PeopleIcon /> },
-      { id: 'Requests', icon: <ChatOutlinedIcon /> },
-      { id: 'History', icon: <HistoryIcon /> },
-      { id: 'Settings', icon: <SettingsIcon /> },
+      { id: 'Arrangement', icon: <CalendarMonthIcon />, active: true, url: PagesUrl.Arrangement },
+      { id: 'Employees', icon: <PeopleIcon />, active: false, url: PagesUrl.Employees },
+      { id: 'Requests', icon: <ChatOutlinedIcon />, active: false, url: PagesUrl.Requests },
+      { id: 'History', icon: <HistoryIcon />, active: false, url: PagesUrl.History },
+      { id: 'Settings', icon: <SettingsIcon />, active: false, url: PagesUrl.Settings },
     ],
   },
   {
     id: 'Business',
     children: [
-      { id: 'Premuim', icon: <WorkspacePremiumIcon sx={{ color: '#ECB365'}} /> },
-      { id: 'Contact us', icon: <MailOutlineOutlinedIcon /> },
+      { id: 'Premuim', icon: <WorkspacePremiumIcon sx={{ color: '#ECB365'}} /> , active: false, url: PagesUrl.Premium},
+      { id: 'Contact us', icon: <MailOutlineOutlinedIcon />, active: false, url: PagesUrl.ContactUs },
     ],
   },
 ];
@@ -51,6 +55,11 @@ const itemCategory = {
 };
 
 export default function NavigatorMui(props: DrawerProps) {
+
+    const location = useLocation().pathname;
+    const activeTab = getBaseUrlByLocation(location);
+    const navigate = useNavigate();
+
   const { ...other } = props;
 
   return (
@@ -72,9 +81,9 @@ export default function NavigatorMui(props: DrawerProps) {
             <ListItem sx={{ py: 2, px: 3 }}>
               <ListItemText sx={{ color: '#fff' }}>{id}</ListItemText>
             </ListItem>
-            {children.map(({ id: childId, icon, active }) => (
+            {children.map(({ id: childId, icon, active, url }) => (
               <ListItem disablePadding key={childId}>
-                <ListItemButton selected={active} sx={item}>
+                <ListItemButton selected={url === activeTab} sx={item} onClick={() => navigate(url)} >
                   <ListItemIcon>{icon}</ListItemIcon>
                   <ListItemText {...(childId === 'Premuim' && { style: { color: '#ECB365' }})}>{childId}</ListItemText>
                 </ListItemButton>

@@ -1,5 +1,5 @@
 import { globalStore } from '../stores/globalStore';
-import { ArrangementApi, PropertiesDTO, SlotsPreferencesDTO, EmpSlotsPreferenceDTO } from './../swagger/stubs/api';
+import { ArrangementApi, PropertiesDTO, SlotsPreferencesDTO, EmpSlotsPreferenceDTO, EmployeeApi } from './../swagger/stubs/api';
 import { emptyProperties, isPropertiesEmpty } from './arrangement.utils';
 
 class ArrangementService {
