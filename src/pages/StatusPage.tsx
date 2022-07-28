@@ -2,7 +2,7 @@ import { MenuItem, Select } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import { observer } from "mobx-react";
 import moment from "moment";
-import { Component, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { LoadingPaper } from "../components/Loading/LoadingPaper";
 import TimeTable from "../components/TimeTable/TimeTable";
 import { EmployeeStatus } from "../interfaces/arrangement.interfaces";
@@ -21,6 +21,7 @@ export const StatusPage = observer(() => {
     const [employeesStatus, setEmployeesStatus] = useState<EmployeeStatus[]>([]);
     const [curEmployee, setCurEmployee] = useState<EmployeeStatus | undefined>();
     const [status, setStatus] = useState<ComponentStatus>(ComponentStatus.LOADING);
+
     let count = 0;
 
     useEffect(() => {

@@ -1,7 +1,7 @@
 import { ReqSlotCell } from './../components/TimeTable/TimeTable';
-import { PropertiesDTO, ReqSlotDTO, RoleDTO, RuleWeightDTO, RangeDTO } from './../swagger/stubs/api';
 import { action, computed, makeAutoObservable, makeObservable, observable, set, toJS } from "mobx"
 import moment from 'moment';
+import { PropertiesDTO, ReqSlotDTO, RuleWeightDTO } from '../swagger/stubs';
 
 interface RuleSelection {
     ruleName: string;
