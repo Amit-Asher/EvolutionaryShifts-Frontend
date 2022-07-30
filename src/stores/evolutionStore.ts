@@ -1,7 +1,5 @@
-import { ReqSlotCell } from './../components/TimeTable/TimeTable';
-import { PropertiesDTO, ReqSlotDTO, RoleDTO, RuleWeightDTO, RangeDTO, EvolutionaryOperatorDTO } from './../swagger/stubs/api';
-import { action, computed, makeAutoObservable, makeObservable, observable, set, toJS } from "mobx"
-import moment from 'moment';
+import { AlgorithmConfigDTO, EvolutionaryOperatorDTO } from './../swagger/stubs/api';
+import { action, computed, makeAutoObservable, observable } from "mobx"
 
 // holds all the state related to create new arrangement flow
 export class EvolutionStore {
@@ -19,10 +17,16 @@ export class EvolutionStore {
     };
 
     @observable
-    public mutations: EvolutionaryOperatorDTO[] = [];
+    public mutations: EvolutionaryOperatorDTO[] = [{
+        type: '',
+        params: {}
+    }];
 
     @observable
-    public termCond: EvolutionaryOperatorDTO[] = []
+    public termConds: EvolutionaryOperatorDTO[] = [{
+        type: '',
+        params: {}
+    }];
 
     @observable
     public elitism: number = 0;
@@ -34,6 +38,18 @@ export class EvolutionStore {
     constructor() {
         makeAutoObservable(this, {}, { autoBind: true })
     }
+
+    @action
+    public setPopulationSize(populationSize: number) {
+        this.populationSize = populationSize;
+    }
+
+    
+    @action
+    public setElitism(elitism: number) {
+        this.elitism = elitism;
+    }
+
 
     @action
     public setSelection(type: string, params: any) {
@@ -50,10 +66,11 @@ export class EvolutionStore {
     }
 
     @action
-    public addMutation(type: string, params: any) {
-        if (type !== '') {
-            this.mutations.push({ type, params });
-        }
+    public addMutation() {
+        this.mutations.push({
+            type: '',
+            params: {}
+        });
     }
 
     @action
@@ -64,16 +81,39 @@ export class EvolutionStore {
     }
 
     @action
-    public addTermCond(type: string, params: any) {
-        if (type !== '') {
-            this.termCond.push({ type, params });
-        }
+    public setMutation(type: string, params: any, idx: number) {
+        this.mutations[idx] = { type, params };
+    }
+
+    @action
+    public addTermCond() {
+        this.termConds.push({
+            type: '',
+            params: {}
+        });
     }
 
     @action
     public removeTermCond(idx: number) {
-        if (idx < this.termCond.length && 0 <= idx) {
-            this.termCond.splice(idx, 1);
+        if (idx < this.termConds.length && 0 <= idx) {
+            this.termConds.splice(idx, 1);
         }
+    }
+
+    @action
+    public setTermCond(type: string, params: any, idx: number) {
+        this.termConds[idx] = { type, params };
+    }
+
+    @computed
+    public get algorithmConfig(): AlgorithmConfigDTO {
+        let algorithmConfigToReturn: AlgorithmConfigDTO = {};
+        algorithmConfigToReturn['populationSize'] = this.populationSize;
+        algorithmConfigToReturn['elitism'] = this.elitism;
+        algorithmConfigToReturn['crossover'] = this.crossover;
+        algorithmConfigToReturn['selection'] = this.selection;
+        algorithmConfigToReturn['mutations'] = this.mutations;
+        algorithmConfigToReturn['terminationCondition'] = this.termConds;
+        return algorithmConfigToReturn;
     }
 }

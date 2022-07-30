@@ -54,5 +54,25 @@ export const getBaseUrlByLocation = (location: string): PagesUrl => {
         return PagesUrl.Employees;
     }
 
+    if (location.includes(PagesUrl.Requests)) {
+        return PagesUrl.Requests;
+    }
+
+    if (location.includes(PagesUrl.History)) {
+        return PagesUrl.History;
+    }
+
+    if (location.includes(PagesUrl.Settings)) {
+        return PagesUrl.Settings;
+    }
+
+    if (location.includes(PagesUrl.Premium)) {
+        return PagesUrl.Premium;
+    }
+
+    if (location.includes(PagesUrl.ContactUs)) {
+        return PagesUrl.ContactUs;
+    }
+
     return PagesUrl.Arrangement;
 }

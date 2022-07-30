@@ -1,15 +1,12 @@
-import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Button, Divider, IconButton, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import { observer } from 'mobx-react';
-import { useState } from 'react';
-import { ConfigurationPanel } from '../components/ConfigurationPanel/ConfigurationPanel';
 import { EvolutionStore } from '../stores/evolutionStore';
 import { globalStore } from '../stores/globalStore';
 import { EvolutionaryOperatorDTO } from '../swagger/stubs';
-
-// const supportedSelections = [
-//     'TournamentSelection'
-// ]
+import DeleteIcon from '@mui/icons-material/Delete';
+import '../themes/evolutionPage.css';
+import { evolutionService } from '../services/evolutionService';
 
 const supportedSelections: EvolutionaryOperatorDTO[] = [
     {
@@ -31,153 +28,306 @@ const supportedSelections: EvolutionaryOperatorDTO[] = [
     }
 ]
 
+const supportedCrossovers: EvolutionaryOperatorDTO[] = [
+    {
+        type: 'BasicCrossover',
+        params: [
+            {
+                type: "number",
+                name: "crossoverPoints"
+            },
+            // {
+            //     type: "boolean",
+            //     name: "boolean test"
+            // },
+            // {
+            //     type: "string",
+            //     name: "string test"
+            // }
+        ]
+    }
+]
+
+const supportedMutations: EvolutionaryOperatorDTO[] = [
+    {
+        type: 'MutationByEmployee',
+        params: [
+            {
+                type: "number",
+                name: "probability"
+            },
+            // {
+            //     type: "boolean",
+            //     name: "boolean test"
+            // },
+            // {
+            //     type: "string",
+            //     name: "string test"
+            // }
+        ]
+    }
+]
+
+const supportedTermConds: EvolutionaryOperatorDTO[] = [
+    {
+        type: 'GenerationCount',
+        params: [
+            {
+                type: "number",
+                name: "count"
+            },
+            // {
+            //     type: "boolean",
+            //     name: "boolean test"
+            // },
+            // {
+            //     type: "string",
+            //     name: "string test"
+            // }
+        ]
+    }
+]
 
 export const EvolutionPage = observer(() => {
     const evolutionStore: EvolutionStore = globalStore.evolutionStore;
 
-    const [selection, setSelection] = useState('');
-    const [crossover, setCrossover] = useState('');
-    const [mutation, setmutation] = useState(''); //needs to enable multiple mutation so probably muliple stats or something
-    const [terminate, setterminate] = useState('');
-
-    const terminateChange = (event: SelectChangeEvent) => {
-        setterminate(event.target.value);
-    };
-    const mutationChange = (event: SelectChangeEvent) => {
-        setmutation(event.target.value);
-    };
-    const crossoverChange = (event: SelectChangeEvent) => {
-        setCrossover(event.target.value);
-    };
-    const selectionChange = (event: SelectChangeEvent) => {
-        setSelection(event.target.value);
-    };
-
-    console.log(`evolutionStore.selection: ${JSON.stringify(evolutionStore.selection, undefined, 2)}`)
-
     return (
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
-            <div>evultion page</div>
-            {/* <FormControl sx={{ m: 1, minWidth: 120 }}> */}
-            <div>
-                <InputLabel id="selection-label">selection</InputLabel>
-                <Select
-                    /* find a way to make it no draw on edges like regular labels */
-                    labelId="selection-label"
-                    style={{ minWidth: "100px" }}
-                    id="demo-simple-select-helper"
-                    value={evolutionStore.selection.type}
-                    //label="Age" //no idea what does it do to add label need label id this doesnt add anything
-                    onChange={(e) => evolutionStore.setSelection(
-                        supportedSelections[0].type || '',
-                        {}
-                    )}
-                    defaultValue="regular" //remember to update state to defualt value
-                >
-                    {supportedSelections.map((supportedSelection: EvolutionaryOperatorDTO) => (
-                        <MenuItem value={supportedSelection.type}>{supportedSelection.type}</MenuItem>
-                    ))}
-                </Select>
-                {/* add controls dynamiclly depends on the type of selection chosen */}
-                {/* understand why input validation doesnt work should only allow number here */}
-                {/* <ConfigurationPanel params={supportedSelections[0].params} onChange={(input: string, paramName: string) => {}}/> */}
+            <div style={{
+                margin: '30px'
+            }}>
 
-                <TextField
-                    id="outlined-search"
-                    label="top precent"
-                    type="number"
-                    inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                    onChange={(e) => {
-                        evolutionStore.setSelection(
-                            evolutionStore.selection.type || '',
-                            {
-                                ...evolutionStore.selection.params,
-                                probability: parseFloat(e.target.value)
-                            }
-                        )
-                    }}
-                />
-            </div>
-            {/* </FormControl> */}
-            <div>
-                <TextField id="outlined-search" label="pupolation size" type="number" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} />
-                <TextField id="outlined-search" label="elitism" type="number" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} />
-            </div>
-            {/* <FormControl sx={{ m: 1, minWidth: 120 }}> */}
-            <div>
-                <InputLabel id="crossover-label">crossover</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
-                <Select
-                    labelId="crossover-label"
-                    style={{ minWidth: "300px" }}
-                    id="crossover-select"
-                    value={crossover}
-                    //label="Age" //no idea what does it do to add label need label id this doesnt add anything
-                    onChange={crossoverChange}
-                    defaultValue="something" //remember to update state to defualt value
-                >
-                    <MenuItem value={"basic"}>basic</MenuItem>
-                    <MenuItem value={"islands"}>islands</MenuItem>
-                    <MenuItem value={"something else"}>something else</MenuItem>
-                </Select>
-                <TextField id="outlined-search" label="number of cutting points" type="number" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} />
+                {/* SELECTION */}
+                <div className='evo-mrg-bt-8'>
+                    <InputLabel id="selection-label">selection</InputLabel>
+                    <Select
+                        /* find a way to make it no draw on edges like regular labels */
+                        labelId="selection-label"
+                        style={{ minWidth: "300px", marginRight: '15px' }}
+                        id="demo-simple-select-helper"
+                        value={evolutionStore.selection.type}
+                        //label="Age" //no idea what does it do to add label need label id this doesnt add anything
+                        onChange={(e) => evolutionStore.setSelection(
+                            supportedSelections[0].type || '',
+                            {}
+                        )}
+                        defaultValue="something" //remember to update state to defualt value
+                    >
+                        {supportedSelections.map((supportedSelection: EvolutionaryOperatorDTO) => (
+                            <MenuItem value={supportedSelection.type}>{supportedSelection.type}</MenuItem>
+                        ))}
+                    </Select>
+                    {/* add controls dynamiclly depends on the type of selection chosen */}
+                    {/* understand why input validation doesnt work should only allow number here */}
+                    {/* <ConfigurationPanel params={supportedSelections[0].params} onChange={(input: string, paramName: string) => {}}/> */}
 
-            </div>
-            {/* </FormControl> */}
-            {/* <FormControl sx={{ m: 1, minWidth: 120 }}> */}
-            <div>
-                <InputLabel id="mutation1-label">mutation</InputLabel>
-                <Select
-                    /* find a way to make it no draw on edges like regular labels */
-                    labelId="mutation1-label"
-                    style={{ minWidth: "300px" }}
-                    id="mutation1-select"
-                    value={mutation}
-                    //label="Age" //no idea what does it do to add label need label id this doesnt add anything
-                    onChange={mutationChange}
-                    defaultValue="something" //remember to update state to defualt value
-                >
-                    <MenuItem value={"basic"}>basic</MenuItem>
-                    <MenuItem value={"islands"}>hours</MenuItem>
-                    <MenuItem value={"something else"}>friends</MenuItem>
-                </Select>
-                <TextField id="outlined-search" label="precent" type="number" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} />
-            </div>
-            {/* </FormControl> */}
-            {/* <FormControl sx={{ m: 1, minWidth: 120 }}> */}
-            <div>
-                <InputLabel id="terminate1-label">terminate condition</InputLabel>
-                <Select
-                    /* find a way to make it no draw on edges like regular labels */
-                    labelId="terminate1-label"
-                    style={{ minWidth: "300px" }}
-                    id="terminate1-select"
-                    value={mutation}
-                    //label="Age" //no idea what does it do to add label need label id this doesnt add anything
-                    onChange={mutationChange}
-                    defaultValue="something" //remember to update state to defualt value
-                >
-                    <MenuItem value={"precent"}>precent</MenuItem>
-                    <MenuItem value={"time"}>time</MenuItem>
-                    <MenuItem value={"generation"}>generation</MenuItem>
-                </Select>
-                <TextField id="outlined-search" label="precent" type="number" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} />
-            </div>
+                    <TextField
+                        id="outlined-search"
+                        label="probability"
+                        type="number"
+                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                        onChange={(e) => {
+                            evolutionStore.setSelection(
+                                evolutionStore.selection.type || '',
+                                {
+                                    ...evolutionStore.selection.params,
+                                    probability: parseFloat(e.target.value)
+                                }
+                            )
+                        }}
+                    />
+                </div>
 
+                <Divider style={{ marginBottom: '40px' }} />
 
-            {/* SUBMIT BUTTON */}
+                {/* POPULATION SIZE + ELITISM */}
+                <div className='evo-mrg-bt-8'>
+                    <TextField
+                        id="outlined-search"
+                        label="pupolation size"
+                        type="number"
+                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                        onChange={(e) => evolutionStore.setPopulationSize(parseInt(e.target.value))}
+                        style={{ minWidth: "300px", marginRight: '15px' }}
 
-            <div style={{ display: "flex", float: "right", padding: "40px" }}>
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    style={{ height: "50px", width: "100px" }}
-                    onClick={() => { }}
-                >
-                    Submit
-                </Button>
+                    />
+                    <TextField
+                        id="outlined-search"
+                        label="elitism"
+                        type="number"
+                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                        onChange={(e) => evolutionStore.setElitism(parseInt(e.target.value))}
+                    />
+                </div>
+
+                <Divider style={{ marginBottom: '40px' }} />
+
+                {/* CROSSOVER */}
+                <div className='evo-mrg-bt-8'>
+                    <InputLabel id="crossover-label">crossover</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
+                    <Select
+                        labelId="crossover-label"
+                        style={{ minWidth: "300px", marginRight: '15px' }}
+                        id="crossover-select"
+                        value={evolutionStore.crossover.type}
+                        //label="Age" //no idea what does it do to add label need label id this doesnt add anything
+                        defaultValue="something" //remember to update state to defualt value
+                        onChange={(e) => evolutionStore.setCrossover(
+                            supportedCrossovers[0].type || '',
+                            {}
+                        )}
+                    >
+                        {supportedCrossovers.map((supportedCrossover: EvolutionaryOperatorDTO) => (
+                            <MenuItem value={supportedCrossover.type}>{supportedCrossover.type}</MenuItem>
+                        ))}
+                    </Select>
+                    <TextField
+                        id="outlined-search"
+                        label="cutting points"
+                        type="number"
+                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                        onChange={(e) => {
+                            evolutionStore.setCrossover(
+                                evolutionStore.crossover.type || '',
+                                {
+                                    ...evolutionStore.crossover.params,
+                                    crossoverPoints: parseFloat(e.target.value)
+                                }
+                            )
+                        }}
+                    />
+                </div>
+
+                <Divider style={{ marginBottom: '40px' }} />
+
+                {/* MUTATIONS */}
+                <div className='evo-mrg-bt-8'>
+                    <div>
+
+                    </div>
+                    <Button
+                        variant="contained"
+                        onClick={() => evolutionStore.addMutation()}
+                        className='evo-mrg-bt-8'
+                        style={{ marginBottom: '10px' }}
+                    >
+                        Add Mutation +
+                    </Button>
+
+                    {evolutionStore.mutations.map((mutation: EvolutionaryOperatorDTO, idx: number) => {
+                        return <div>
+                            <InputLabel id="crossover-label">mutation</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
+                            <Select
+                                labelId="mutation-label"
+                                style={{ minWidth: "300px", marginRight: '15px' }}
+                                id="mutation-select"
+                                value={mutation?.type || ''}
+                                //label="Age" //no idea what does it do to add label need label id this doesnt add anything
+                                defaultValue="something" //remember to update state to defualt value
+                                onChange={(e) => evolutionStore.setMutation(supportedMutations[0].type || '', {}, idx)}
+                            >
+                                {supportedMutations.map((supportedMutation: EvolutionaryOperatorDTO) => (
+                                    <MenuItem value={supportedMutation.type}>{supportedMutation.type}</MenuItem>
+                                ))}
+                            </Select>
+                            <TextField
+                                id="outlined-search"
+                                label="probability"
+                                type="number"
+                                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                                value={mutation?.params?.probability}
+                                onChange={(e) => {
+                                    evolutionStore.setMutation(
+                                        evolutionStore.mutations[idx].type || '',
+                                        {
+                                            ...evolutionStore.mutations[idx].params,
+                                            probability: parseFloat(e.target.value)
+                                        },
+                                        idx
+                                    )
+                                }}
+                            />
+                            <IconButton
+                                aria-label="delete"
+                                onClick={() => evolutionStore.removeMutation(idx)}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </div>
+                    })}
+                </div>
+
+                <Divider style={{ marginBottom: '40px' }} />
+
+                {/* TERMINATION CONDITIONS */}
+                <div className='evo-mrg-bt-8'>
+
+                    <Button
+                        variant="contained"
+                        onClick={() => evolutionStore.addTermCond()}
+                        className='evo-mrg-bt-8'
+                        style={{ marginBottom: '10px' }}
+                    >
+                        Add Termination Condition +
+                    </Button>
+
+                    {evolutionStore.termConds.map((termCond: EvolutionaryOperatorDTO, idx: number) => {
+                        return <div>
+                            <InputLabel id="crossover-label">terminate condition</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
+                            <Select
+                                labelId="mutation-label"
+                                style={{ minWidth: "300px", marginRight: '15px' }}
+                                id="mutation-select"
+                                value={termCond?.type || ''}
+                                //label="Age" //no idea what does it do to add label need label id this doesnt add anything
+                                defaultValue="something" //remember to update state to defualt value
+                                onChange={(e) => evolutionStore.setTermCond(supportedTermConds[0].type || '', {}, idx)}
+                            >
+                                {supportedTermConds.map((supportedTermCond: EvolutionaryOperatorDTO) => (
+                                    <MenuItem value={supportedTermCond.type}>{supportedTermCond.type}</MenuItem>
+                                ))}
+                            </Select>
+                            <TextField
+                                key={`outlined-search-${idx}`}
+                                id={`outlined-search-${idx}`}
+                                label="count"
+                                type="number"
+                                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                                value={termCond?.params?.count}
+                                onChange={(e) => {
+                                    evolutionStore.setTermCond(
+                                        evolutionStore.termConds[idx].type || '',
+                                        {
+                                            ...evolutionStore.termConds[idx].params,
+                                            count: parseFloat(e.target.value)
+                                        },
+                                        idx
+                                    )
+                                }}
+                            />
+                            <IconButton
+                                aria-label="delete"
+                                onClick={() => evolutionStore.removeTermCond(idx)}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </div>
+                    })}
+                </div>
+
+                {/* SUBMIT BUTTON */}
+                <div className='evo-mrg-bt-8' style={{ display: "flex", padding: "40px" }}>
+                    <div style={{ width: '90%' }}></div>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        style={{ height: "50px", width: "100px" }}
+                        onClick={() => evolutionService.solveArrangement(evolutionStore.algorithmConfig)}
+                    >
+                        Submit
+                    </Button>
+                </div>
             </div>
-            {/* </FormControl> */}
-
         </Paper>
     );
 });

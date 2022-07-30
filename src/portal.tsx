@@ -12,6 +12,7 @@ import { StatusPage } from "./pages/StatusPage";
 import { PublishPage } from "./pages/PublishPage";
 import { Navigator } from "./components/Navigator/Navigator";
 import { arrangementPageSubTabs, PagesUrl } from "./interfaces/pages.meta";
+import { ComingSoonPage } from "./pages/ComingSoonPage";
 
 export default function Portal() {
   return (
@@ -59,7 +60,7 @@ export default function Portal() {
             path={PagesUrl.Arrangement_Publish}
             element={
               <PageFrame
-                pageComponent={PublishPage}
+                pageComponent={ComingSoonPage}
                 subtabs={arrangementPageSubTabs}
               />
             }
@@ -72,6 +73,26 @@ export default function Portal() {
           <Route
             path={PagesUrl.Employees}
             element={<PageFrame pageComponent={EmployeesPage} subtabs={[]} />}
+          />
+          <Route
+            path={PagesUrl.Requests}
+            element={<PageFrame pageComponent={ComingSoonPage} subtabs={[]} />}
+          />
+          <Route
+            path={PagesUrl.History}
+            element={<PageFrame pageComponent={ComingSoonPage} subtabs={[]} />}
+          />
+          <Route
+            path={PagesUrl.Settings}
+            element={<PageFrame pageComponent={ComingSoonPage} subtabs={[]} />}
+          />
+          <Route
+            path={PagesUrl.Premium}
+            element={<PageFrame pageComponent={ComingSoonPage} subtabs={[]} />}
+          />
+          <Route
+            path={PagesUrl.ContactUs}
+            element={<PageFrame pageComponent={ComingSoonPage} subtabs={[]} />}
           />
         </Routes>
       </Box>
