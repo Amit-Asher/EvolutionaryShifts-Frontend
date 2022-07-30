@@ -7,6 +7,8 @@ import { EvolutionaryOperatorDTO } from '../swagger/stubs';
 import DeleteIcon from '@mui/icons-material/Delete';
 import '../themes/evolutionPage.css';
 import { evolutionService } from '../services/evolutionService';
+import { useNavigate } from 'react-router';
+import { PagesUrl } from '../interfaces/pages.meta';
 
 const supportedSelections: EvolutionaryOperatorDTO[] = [
     {
@@ -90,6 +92,7 @@ const supportedTermConds: EvolutionaryOperatorDTO[] = [
 
 export const EvolutionPage = observer(() => {
     const evolutionStore: EvolutionStore = globalStore.evolutionStore;
+    const navigate = useNavigate();
 
     return (
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
@@ -97,6 +100,28 @@ export const EvolutionPage = observer(() => {
                 margin: '30px'
             }}>
 
+                {/* POPULATION SIZE + ELITISM */}
+                <div className='evo-mrg-bt-8'>
+                    <TextField
+                        id="outlined-search"
+                        label="pupolation size"
+                        type="number"
+                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                        onChange={(e) => evolutionStore.setPopulationSize(parseInt(e.target.value))}
+                        style={{ minWidth: "300px", marginRight: '15px' }}
+
+                    />
+                    <TextField
+                        id="outlined-search"
+                        label="elitism"
+                        type="number"
+                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                        onChange={(e) => evolutionStore.setElitism(parseInt(e.target.value))}
+                    />
+                </div>
+
+                <Divider style={{ marginBottom: '40px' }} />
+                
                 {/* SELECTION */}
                 <div className='evo-mrg-bt-8'>
                     <InputLabel id="selection-label">selection</InputLabel>
@@ -135,28 +160,6 @@ export const EvolutionPage = observer(() => {
                                 }
                             )
                         }}
-                    />
-                </div>
-
-                <Divider style={{ marginBottom: '40px' }} />
-
-                {/* POPULATION SIZE + ELITISM */}
-                <div className='evo-mrg-bt-8'>
-                    <TextField
-                        id="outlined-search"
-                        label="pupolation size"
-                        type="number"
-                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                        onChange={(e) => evolutionStore.setPopulationSize(parseInt(e.target.value))}
-                        style={{ minWidth: "300px", marginRight: '15px' }}
-
-                    />
-                    <TextField
-                        id="outlined-search"
-                        label="elitism"
-                        type="number"
-                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                        onChange={(e) => evolutionStore.setElitism(parseInt(e.target.value))}
                     />
                 </div>
 
@@ -301,7 +304,7 @@ export const EvolutionPage = observer(() => {
                                             ...evolutionStore.termConds[idx].params,
                                             count: parseFloat(e.target.value)
                                         },
-                                        idx
+                                     idx
                                     )
                                 }}
                             />
@@ -320,11 +323,14 @@ export const EvolutionPage = observer(() => {
                     <div style={{ width: '90%' }}></div>
                     <Button
                         variant="contained"
-                        color="secondary"
+                        color="success"
                         style={{ height: "50px", width: "100px" }}
-                        onClick={() => evolutionService.solveArrangement(evolutionStore.algorithmConfig)}
+                        onClick={() => {
+                            navigate(PagesUrl.Arrangement_Publish);
+                            evolutionService.solveArrangement(evolutionStore.algorithmConfig)
+                        }}
                     >
-                        Submit
+                        Start
                     </Button>
                 </div>
             </div>
