@@ -1,6 +1,7 @@
 import { FormLabel } from "@mui/material";
 
 export enum PagesUrl {
+    // *******  Manager pages ******* //
     Arrangement = '/arrangement',
     Arrangement_New= '/arrangement/new',
     Arrangement_Status= '/arrangement/status',
@@ -12,7 +13,11 @@ export enum PagesUrl {
     History = '/history',
     Settings = '/settings',
     Premium = '/premium',
-    ContactUs = '/contact'
+    ContactUs = '/contact',
+
+    // *******  Employee pages ******* //
+    Emp_Preferences = '/emp/preferences',
+    Emp_Arrangement = '/emp/arrangement'
 }
 
 export interface SubTab {

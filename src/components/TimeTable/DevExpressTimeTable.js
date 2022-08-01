@@ -136,6 +136,10 @@ export default (props) => {
         props?.setSlots?.([]); // set outside
     }, []);
 
+    useEffect(() => {
+        setCurrentViewName(props?.views[0] ?? '');
+    }, [props.views])
+
     // only relevent for the flow of new arrangement (set reqslots)
     const commitChanges = ({ added, changed, deleted }) => {
         if (added) {
@@ -181,6 +185,14 @@ export default (props) => {
             />
             {props?.setSlots && <EditingState onCommitChanges={commitChanges} />}
             {props?.setSlots && <EditRecurrenceMenu />}
+            <EditingState
+                onCommitChanges={commitChanges}
+                onClick={() => alert('test')}
+                onEditingAppointmentChange={() => alert('test')}
+            />
+            <EditRecurrenceMenu
+                onClick={() => alert('test')}
+            />
             {props?.views?.map((viewName) => (
                 <WeekView
                     key={viewName}
@@ -196,8 +208,10 @@ export default (props) => {
             <DateNavigator />
             <AppointmentTooltip
                 showCloseButton
-                {...(props?.setSlots && { showOpenButton: true, showDeleteButton: true })}
+                showOpenButton={props?.setSlots ? true : false}
+                showDeleteButton={props?.setSlots ? true : false}
             />
+
             <ViewSwitcher />
             {props?.setSlots && <AppointmentForm
                 basicLayoutComponent={BasicLayout}

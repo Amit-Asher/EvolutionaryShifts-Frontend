@@ -21,13 +21,20 @@ import { useState } from 'react';
 
 const categories = [
     {
-        id: 'General',
+        id: 'Manager-portal',
         children: [
             { id: 'Arrangement', icon: <CalendarMonthIcon />, active: true, url: PagesUrl.Arrangement },
             { id: 'Employees', icon: <PeopleIcon />, active: false, url: PagesUrl.Employees },
             { id: 'Requests', icon: <ChatOutlinedIcon />, active: false, url: PagesUrl.Requests },
             { id: 'History', icon: <HistoryIcon />, active: false, url: PagesUrl.History },
             { id: 'Settings', icon: <SettingsIcon />, active: false, url: PagesUrl.Settings },
+        ],
+    },
+    {
+        id: 'Employees-portal',
+        children: [
+            { id: 'Preferences', icon: <CalendarMonthIcon />, active: false, url: PagesUrl.Emp_Preferences },
+            { id: 'Arrangement', icon: <PeopleIcon />, active: false, url: PagesUrl.Emp_Arrangement }
         ],
     },
     {

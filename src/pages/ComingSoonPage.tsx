@@ -2,6 +2,7 @@ import { Collapse } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
+import TimeTable from '../components/TimeTable/TimeTable';
 
 export const ComingSoonPage = observer(() => {
     const [animation, setAnimation] = useState(false);
