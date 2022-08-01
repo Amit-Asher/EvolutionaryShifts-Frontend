@@ -3,51 +3,34 @@ import { observer } from 'mobx-react';
 import { useEffect, useState } from "react";
 import { globalStore } from "../stores/globalStore";
 import { ArrangementStore } from "../stores/arrangementStore";
-import TimeTable from "../components/TimeTable/TimeTable";
+import TimeTable, { ReqSlotCell } from "../components/TimeTable/TimeTable";
 import { useNavigate } from 'react-router-dom';
-import { AlgorithmConfigDTO, EmployeeDTO, EvolutionApi, EvolutionStatusDTO, GenericResponseDTO, ShiftDTO } from "../swagger/stubs";
+import { EmployeeDTO, EvolutionApi, EvolutionStatusDTO, ShiftDTO } from "../swagger/stubs";
 import { ComponentStatus } from "../interfaces/common";
 import { companyService } from "../services/companyService";
 import { mock } from "../mocks/mockData";
 import { LoadingPaper } from "../components/Loading/LoadingPaper";
-import { Button } from '@mui/material';
+import { Button, styled } from '@mui/material';
 
+const Label = styled('label')`
+  padding: 0 0 4px;
+  line-height: 1.5;
+  display: block;
+`;
 
-
-
-
-const getSolution = async (): Promise<ShiftDTO[]> => {
+const getSolution = async (setFitness: React.Dispatch<React.SetStateAction<string>>, setGenerationNumber: React.Dispatch<React.SetStateAction<string>>): Promise<ShiftDTO[]> => {
     try {
-         // GET REQUEST
-         const res: EvolutionStatusDTO = await (new EvolutionApi()).getSolution();
-         const arrangement: ShiftDTO[] = res.arrangement || [];
+        // GET REQUEST
+        const res: EvolutionStatusDTO = await (new EvolutionApi()).getSolution();
+        const arrangement: ShiftDTO[] = res.arrangement || [];
+        setFitness("Fitness: ".concat(res.fitness?.toString() || ""));
+        setGenerationNumber("Generation Number: ".concat(res.generationNumber?.toString() || " "));
+        console.log('Success to get solution');
         return arrangement;
+        
     } catch (err) {
         console.log('failed to get solution');
         return [];
-    }
-}
-
-
-
-const solveArrangement = async (algoConfig: AlgorithmConfigDTO): Promise<void> => {
-    try {
-         // GET REQUEST
-        const res: GenericResponseDTO = await (new EvolutionApi()).solveArrangement({
-            crossover: algoConfig.crossover,
-            elitism: algoConfig.elitism,
-            mutations: algoConfig.mutations,
-            populationSize: algoConfig.populationSize,
-            selection: algoConfig.selection,
-            terminationCondition: algoConfig.terminationCondition
-
-        });
-        ///const isSolving: boolean = res.success || false;
-        console.log('Success to get solution');
-        return;
-    } catch (err) {
-        console.log('failed to get solution');
-        return;
     }
 }
 
@@ -59,20 +42,12 @@ export const PublishPage = observer(() => {
     const [allEmployees, setAllEmployees] = useState<EmployeeDTO[]>([]);
     const [allRules, setAllRules] = useState<string[]>([]);
     const [status, setStatus] = useState<ComponentStatus>(
-      ComponentStatus.LOADING
+        ComponentStatus.LOADING
     );
-
-
-
-
-
-    const [solution, setSolution] = useState<ShiftDTO[]>([]);
-    const fetchSolution = async () => {
-        const arrangement = await getSolution();
-        setSolution(arrangement);
-    }
-
-
+    const [reqslots, setReqSlots] = useState<ReqSlotCell[]>([]);
+    const [generationNumber, setGenerationNumber] = useState<string>(" ");
+    const [fitness, setFitness] =  useState<string>(" ");
+    
     const fetchRoles = async () => {
         const employees: EmployeeDTO[] = await companyService.getEmployees();
         const roles: string[] = await companyService.getRoles();
@@ -80,38 +55,63 @@ export const PublishPage = observer(() => {
         setAllEmployees(employees);
         setAllRules(mock.rules); // TODO: add route to api and get rules metadata from there
         setStatus(ComponentStatus.READY);
-      };
+    };
+
+    const loadSolution = async (setFitness: React.Dispatch<React.SetStateAction<string>>, setGenerationNumber: React.Dispatch<React.SetStateAction<string>>) => {
+        if (reqslots.length == 0) {
+            const solution = await getSolution(setFitness, setGenerationNumber);
+            let map: { [key: string]: ShiftDTO[] } = {};
+            for (let i = 0; i < solution.length; i++) {
+                const key: any = `${solution[i].startTime || ''}-${solution[i].endTime || ''}-${solution[i].role || ''}`;
+                if (Object.keys(map).includes(key)) {
+                    map[key].push(solution[i]);
+                }
+                else {
+                    map[key] = [solution[i]];
+                }
+            }
+
+            const reqslotscell: ReqSlotCell[] = Object.values(map).map((shiftsInSlot: ShiftDTO[], idx) => {
+                return {
+                    id: idx,
+                    startDate: new Date(shiftsInSlot[0].startTime || "error_start_date"),
+                    endDate: new Date(shiftsInSlot[0].endTime || "error_end_date"),
+                    minPersonnelSize: 0,
+                    maxPersonnelSize: 0,
+                    title: shiftsInSlot.reduce((acc: string, cur: ShiftDTO) => acc.concat(cur.employeeName || ''), ''),
+                    role: shiftsInSlot[0].role || "error_role"
+                };
+            });
+            setReqSlots(reqslotscell);
+            console.log(`reqslots: ${JSON.stringify(reqslots, undefined, 2)}`);
+        }
+    }
 
     useEffect(() => {
         fetchRoles();
-        //fetchSolution();
-      }, []);
-    
-      if (status !== ComponentStatus.READY) {
+    }, []);
+
+    if (status !== ComponentStatus.READY) {
         return <LoadingPaper />;
-      }
+    }
+    
 
-
-  return (<>
-    <Paper sx={{ margin: "auto", overflow: "hidden" }}>
-    <Button id="ButtonSolution" variant="contained" disableElevation={true} onClick={(event) => {
-            //i think we need to add to the store the algo config or get it from server or something
-            //solveArrangement(algoConfig);
-            fetchSolution();
-            for (let i = 0; i < solution.length; i++) {
-               //const day = solution[i].startTime;//how the hill i can get the day 
-
-            }
-        }}
-        >Get Solution</Button>
+    return (<>
+        <Paper sx={{ margin: "auto", overflow: "hidden" }}>
+        <div style={{ marginBottom: "30px", display: 'flex' }}>
+        <Label style={{marginRight: "20px"}}>{fitness}</Label>
+        <Label>{generationNumber}</Label>
+        </div>
+        <Button id="ButtonSolution" variant="contained" disableElevation={true} onClick={async (event) => loadSolution(setFitness, setGenerationNumber)}>
+         Get Solution
+        </Button>
         <div style={{ backgroundColor: "#fff", padding: "20px" }}>
-        <TimeTable
-          views={allRoles}
-          slots={arrangementStore.reqSlots}
-          setSlots={arrangementStore.setReqSlots}
-        />
-      </div>
-    </Paper>
+            <TimeTable
+                views={allRoles}
+                slots={reqslots}
+            />
+        </div>
+        </Paper>
     </>
-  );
+    );
 });
