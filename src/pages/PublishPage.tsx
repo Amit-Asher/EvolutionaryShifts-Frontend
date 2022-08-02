@@ -5,7 +5,7 @@ import { globalStore } from "../stores/globalStore";
 import { ArrangementStore } from "../stores/arrangementStore";
 import TimeTable, { ReqSlotCell } from "../components/TimeTable/TimeTable";
 import { useNavigate } from 'react-router-dom';
-import { EmployeeDTO, EvolutionApi, EvolutionStatusDTO, ShiftDTO } from "../swagger/stubs";
+import { EmployeeDTO, EvolutionApi, EvolutionStatusDTO, PublishApi, ShiftDTO } from "../swagger/stubs";
 import { ComponentStatus } from "../interfaces/common";
 import { companyService } from "../services/companyService";
 import { mock } from "../mocks/mockData";
@@ -17,6 +17,16 @@ const Label = styled('label')`
   line-height: 1.5;
   display: block;
 `;
+
+const publishArrangement = async (): Promise<void> => {
+    try {
+        // POST REQUEST
+        const res = await (new PublishApi()).publishArrangement();
+        console.log(res.message);
+    } catch (err) {
+        console.log('failed to publish arrangement');
+    }
+}
 
 const getSolution = async (setFitness: React.Dispatch<React.SetStateAction<string>>, setGenerationNumber: React.Dispatch<React.SetStateAction<string>>): Promise<ShiftDTO[]> => {
     try {
@@ -83,7 +93,7 @@ export const PublishPage = observer(() => {
                 };
             });
             setReqSlots(reqslotscell);
-            console.log(`reqslots: ${JSON.stringify(reqslots, undefined, 2)}`);
+            //console.log(`reqslots: ${JSON.stringify(reqslots, undefined, 2)}`);
         }
     }
 
@@ -102,7 +112,11 @@ export const PublishPage = observer(() => {
         <Label style={{marginRight: "20px"}}>{fitness}</Label>
         <Label>{generationNumber}</Label>
         </div>
-        <Button id="ButtonSolution" variant="contained" disableElevation={true} onClick={async (event) => loadSolution(setFitness, setGenerationNumber)}>
+        <Button id="ButtonSolution" variant="contained" disableElevation={true} onClick={async (event) =>{ 
+            loadSolution(setFitness, setGenerationNumber);
+            const btn = document.getElementById('ButtonSolution') as HTMLButtonElement | null;
+            // Set disabled attribute
+            btn?.setAttribute('disabled', '');}}>
          Get Solution
         </Button>
         <div style={{ backgroundColor: "#fff", padding: "20px" }}>
@@ -111,6 +125,23 @@ export const PublishPage = observer(() => {
                 slots={reqslots}
             />
         </div>
+        <Button id="ButtonPublish" variant="contained" disableElevation={true} style={{marginBottom:"10px"}}
+        onClick={(event) => {
+            if(reqslots.length !== 0){
+                publishArrangement();
+                const btn = document.getElementById('ButtonPublish') as HTMLButtonElement | null;
+                // Set disabled attribute
+                btn?.setAttribute('disabled', '');
+
+                //Remove disabled attribute
+                // btn?.removeAttribute('disabled');
+            }
+            else{
+                console.log("You need to get solution first");
+            }
+        }}>
+         Publish
+        </Button>
         </Paper>
     </>
     );
