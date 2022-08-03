@@ -1,4 +1,6 @@
+import { PrfSlotDTO } from './../swagger/stubs/api';
 import { PropertiesDTO } from "../swagger/stubs";
+import _ from 'lodash';
 
 export const emptyProperties = {
     activeEmployeesIds: [],

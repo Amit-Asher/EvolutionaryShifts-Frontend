@@ -172,6 +172,21 @@ export default (props) => {
         }
     };
 
+    const CustomAppointment = (CustomAppointmentProps) => {
+        return (
+            <Appointments.Appointment
+                onClick={props.onSelectAppointment ? (event) => {
+                    props.onSelectAppointment(CustomAppointmentProps?.data, CustomAppointmentProps?.data?.isSelected)
+                } : undefined}
+                style={{
+                    backgroundColor: CustomAppointmentProps?.data?.isSelected ? '#2e7d32' : ''
+                }}
+            >
+                {CustomAppointmentProps.children}
+            </Appointments.Appointment>
+        );
+    }
+
     return (
         <Scheduler
             data={props.slots.filter((slot) => slot.role === currentViewName)}
@@ -185,14 +200,6 @@ export default (props) => {
             />
             {props?.setSlots && <EditingState onCommitChanges={commitChanges} />}
             {props?.setSlots && <EditRecurrenceMenu />}
-            <EditingState
-                onCommitChanges={commitChanges}
-                onClick={() => alert('test')}
-                onEditingAppointmentChange={() => alert('test')}
-            />
-            <EditRecurrenceMenu
-                onClick={() => alert('test')}
-            />
             {props?.views?.map((viewName) => (
                 <WeekView
                     key={viewName}
@@ -203,14 +210,17 @@ export default (props) => {
                     cellDuration={120}
                 />
             ))}
-            <Appointments />
+
+            {props.onSelectAppointment && <Appointments appointmentComponent={CustomAppointment} />}
+            {!props.onSelectAppointment && <Appointments />}
+
             <Toolbar {...(loading ? { rootComponent: ToolbarWithLoading } : null)} />
             <DateNavigator />
-            <AppointmentTooltip
+            {!props.onSelectAppointment && <AppointmentTooltip
                 showCloseButton
                 showOpenButton={props?.setSlots ? true : false}
                 showDeleteButton={props?.setSlots ? true : false}
-            />
+            />}
 
             <ViewSwitcher />
             {props?.setSlots && <AppointmentForm

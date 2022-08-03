@@ -27,10 +27,6 @@ class CompanyService {
         }
     }
 
-    public async getEmployeeById(id: string) {
-        const employees = await this.getEmployees();
-        return employees.find()
-    }
 
     public async getRoles(): Promise<string[]> {
         try {
