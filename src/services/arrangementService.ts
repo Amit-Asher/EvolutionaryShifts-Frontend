@@ -1,5 +1,5 @@
 import { globalStore } from '../stores/globalStore';
-import { ArrangementApi, PropertiesDTO, SlotsPreferencesDTO, EmpSlotsPreferenceDTO, EmployeeApi } from './../swagger/stubs/api';
+import { ArrangementApi, PropertiesDTO, SlotsPreferencesDTO, EmpSlotsPreferenceDTO, EmployeeApi, EmployeePreferencesDTO } from './../swagger/stubs/api';
 import { emptyProperties, isPropertiesEmpty } from './arrangement.utils';
 
 class ArrangementService {
@@ -61,6 +61,22 @@ class ArrangementService {
             globalStore.notificationStore.show({ message: 'Failed to fetch arrangement properties' });
             console.error('Failed to fetch arrangement properties');
             return this.propertiesCache ?? [];
+        }
+    }
+
+    public async sendPreference(employeePreferences: EmployeePreferencesDTO) {
+        try {
+            globalStore.notificationStore.show({ message: 'Sending employee preference...' });
+            const res = await (new ArrangementApi()).addPreferences(employeePreferences);
+            if (!res.success) {
+                globalStore.notificationStore.show({ message: 'Failed to send employee preference' });
+                return;
+            }
+
+            globalStore.notificationStore.show({ message: 'Send employee preference completed successfully!' });
+        } catch (err) {
+            globalStore.notificationStore.show({ message: 'Failed to send employee preference' });
+            console.error('Failed to send employee preference');
         }
     }
 }

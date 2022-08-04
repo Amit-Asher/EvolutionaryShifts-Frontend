@@ -6,6 +6,7 @@ interface TimeTableProps {
     views: string[];
     slots: ReqSlotCell[];
     setSlots?: (reqSlots: ReqSlotCell[]) => void;
+    onSelectAppointment?: (selectedSlot: ReqSlotCell, isSelected: boolean) => void;
 }
 
 export interface ReqSlotCell {
@@ -16,16 +17,18 @@ export interface ReqSlotCell {
     maxPersonnelSize: number;
     title: string; // by design, title is always "Required*"
     role: string;
+    isSelected?: boolean;
 }
 
 function TimeTable(props: TimeTableProps) {    
     console.log(`props.slots: ${JSON.stringify(props.slots, undefined, 2)}`)
-
+    
   return (
       <DevExpressTimeTable
         views={props.views ?? []}
         slots={props.slots ?? []}
         setSlots={props?.setSlots}
+        onSelectAppointment={props?.onSelectAppointment}
       />
   );
 }

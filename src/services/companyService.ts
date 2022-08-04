@@ -27,6 +27,7 @@ class CompanyService {
         }
     }
 
+
     public async getRoles(): Promise<string[]> {
         try {
             if (this.rolesCache.length === 0) {
