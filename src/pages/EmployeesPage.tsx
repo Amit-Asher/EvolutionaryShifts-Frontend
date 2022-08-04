@@ -35,7 +35,12 @@ import PhoneInput from 'react-phone-number-input'
 import { E164Number } from 'libphonenumber-js';
 import { Paper } from '@mui/material';
 import { observer } from 'mobx-react';
-import { EmployeeApi, EmployeeDTO, EmployeesDTO, NewEmployeeDTO } from '../swagger/stubs';
+import { EmployeeApi, EmployeeDTO, EmployeesDTO, NewEmployeeDTO, RoleApi, RoleDTO, RolesDTO } from '../swagger/stubs';
+import AsyncSelect from 'react-select/async';
+import cssVars from '@mui/system/cssVars';
+import { FormControlUnstyledContext } from '@mui/base';
+import { isGenerator } from 'mobx/dist/internal';
+
 
 const Root = styled('div')(
     ({ theme }) => `
@@ -51,41 +56,7 @@ const Label = styled('label')`
   display: block;
 `;
 
-const InputWrapper = styled('div')(
-    ({ theme }) => `
-  
-  border: 1px solid ${theme.palette.mode === 'dark' ? '#434343' : '#d9d9d9'};
-  background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
-  border-radius: 4px;
-  padding: 1px;
-  display: inline-flex;
-  flex-wrap: wrap;
 
-  &:hover {
-    border-color: ${theme.palette.mode === 'dark' ? '#177ddc' : '#40a9ff'};
-  }
-
-  &.focused {
-    border-color: ${theme.palette.mode === 'dark' ? '#177ddc' : '#40a9ff'};
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-  }
-
-  & input {
-    background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
-    color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'
-        };
-    height: 30px;
-    box-sizing: border-box;
-    padding: 4px 6px;
-    width: 0;
-    min-width: 30px;
-    flex-grow: 1;
-    border: 0;
-    margin: 0;
-    outline: 0;
-  }
-`,
-);
 
 interface TagProps extends ReturnType<AutocompleteGetTagProps> {
     label: string;
@@ -101,108 +72,27 @@ function Tag(props: TagProps) {
     );
 }
 
-const StyledTag = styled(Tag)<TagProps>(
-    ({ theme }) => `
-  display: flex;
-  align-items: center;
-  height: 24px;
-  margin: 2px;
-  line-height: 22px;
-  background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'
-        };
-  border: 1px solid ${theme.palette.mode === 'dark' ? '#303030' : '#e8e8e8'};
-  border-radius: 2px;
-  box-sizing: content-box;
-  padding: 0 4px 0 10px;
-  outline: 0;
-  overflow: hidden;
 
-  &:focus {
-    border-color: ${theme.palette.mode === 'dark' ? '#177ddc' : '#40a9ff'};
-    background-color: ${theme.palette.mode === 'dark' ? '#003b57' : '#e6f7ff'};
-  }
 
-  & span {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
 
-  & svg {
-    font-size: 12px;
-    cursor: pointer;
-    padding: 4px;
-  }
-`,
-);
-
-const Listbox = styled('ul')(
-    ({ theme }) => `
-  width: 300px;
-  margin: 2px 0 0;
-  padding: 0;
-  position: absolute;
-  list-style: none;
-  background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
-  overflow: auto;
-  max-height: 250px;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1;
-
-  & li {
-    padding: 5px 12px;
-    display: flex;
-
-    & span {
-      flex-grow: 1;
-    }
-
-    & svg {
-      color: transparent;
-    }
-  }
-
-  & li[aria-selected='true'] {
-    background-color: ${theme.palette.mode === 'dark' ? '#2b2b2b' : '#fafafa'};
-    font-weight: 600;
-
-    & svg {
-      color: #1890ff;
-    }
-  }
-
-  & li.${autocompleteClasses.focused} {
-    background-color: ${theme.palette.mode === 'dark' ? '#003b57' : '#e6f7ff'};
-    cursor: pointer;
-
-    & svg {
-      color: currentColor;
-    }
-  }
-`,
-);
-
-interface RulesOption {
-    name: string;
-}
-
-//need to GET requst from server to all the rules and push the, into "Rules"
-const Rules = [
-    { name: "Teacher" },
-    { name: "Manager" },
-    { name: "runner" },
-    { name: "CEO" },
-];
-
-const sendNewEmployee = async (employee: Employee): Promise<void> => {
+const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>): Promise<void> => {
     try {
         // POST REQUEST
         const res = await (new EmployeeApi()).addEmployee({
             name: employee.name,
-            phoneNumber: employee.phone,
-            roles: employee.rules
+            phoneNumber: employee.phoneNumber,
+            roles: employee.roles
         });
+
+
+        //the id is the name just for now
+        var EmpToAdd: EmployeeDTO = {name:employee.name,phoneNumber:employee.phoneNumber,roles:employee.roles, id:employee.name};
+
+        
+        var tempemps = employees;
+        tempemps.unshift(EmpToAdd);//PROBLEM: ADD EMP WITHOUT ID!!!
+        setEmployees([...tempemps]);
+        console.log("Sucsses to set employee");
     } catch (err) {
         console.log('failed to set employee');
     }
@@ -213,7 +103,7 @@ const getEmployees = async (): Promise<EmployeeDTO[]> => {
         // GET REQUEST
         const res: EmployeesDTO = await (new EmployeeApi()).getAllEmployees();
         const employees: EmployeeDTO[] = res.employees ?? [];
-        console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
+        //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
         return employees;
     } catch (err) {
         console.log('failed to get employees');
@@ -223,54 +113,53 @@ const getEmployees = async (): Promise<EmployeeDTO[]> => {
 
 
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-interface Employee {
-    name: string;
-    phone: string;
-    rules: string[];
+const getRoles = async (): Promise<string[]> => {
+    try {
+        // GET REQUEST
+        const res: RolesDTO = await (new RoleApi()).getAllRoles();
+        return res?.names ?? [];
+    } catch (err) {
+        console.log('failed to get roles');
+        return [];
+    }
 }
 
-function createEmployee(
-    name: string,
-    phone: string,
-    rules: string[]
-): Employee {
-    return {
-        name,
-        phone,
-        rules
-    };
-}
 
-function deleteRuleForEmp() {
-    console.log("gggg");
+
+
+const deleteRoleForEmp = async (employee:EmployeeDTO,role: string) : Promise<void> => {
+    console.log(employee.name + "role: " + role);
 
 
     //need to dominant this buuton to when a press on it it wiil not press the whole row or just to call setSelected() with specific row
-    //need to POST requst to the server to delete this rule from the specific employee
+    //need to POST requst to the server to delete this role from the specific employee
     //need to re-rander the table og employees
 }
 
-function CreateRulesListForEmp(employee: Employee) {
+interface RolesListForEmpProps {
+    employee: EmployeeDTO;
+}
+
+function RolesListForEmp(props: RolesListForEmpProps) {
     const [dense, setDense] = React.useState(false);
     const [secondary, setSecondary] = React.useState(false);
     var lines = [];
 
-    for (let i = 0; i < employee.rules.length; i++) {
+    for (let i = 0; i < (props?.employee?.roles || []).length; i++) {
         lines.push(
             <ListItem
                 key={i}
                 secondaryAction={
-                    <IconButton edge="end" aria-label="delete" onClick={deleteRuleForEmp}>
+                    <IconButton edge="end" aria-label="delete" onClick={(event) => {
+                        deleteRoleForEmp(props.employee, (props?.employee?.roles || [])[i]);
+                    }}>
                         <DeleteIcon />
                     </IconButton>
                 }
             >
 
                 <ListItemText
-                    primary={employee.rules[i]}
+                    primary={(props?.employee?.roles || [])[i]}
                     secondary={secondary ? 'Secondary text' : null}
                 />
             </ListItem>
@@ -283,19 +172,7 @@ function CreateRulesListForEmp(employee: Employee) {
     );
 }
 
-var employees: Employee[] = [
 
-
-    //need to GET requst from the server for all the employees and push them in "employees"
-    createEmployee('amit', '305', ["Teather", "Manager"]),
-    createEmployee('asher', '452', ["CEO", "runner", "Teather"]),
-    createEmployee('andrio', '262', ["Teather", "Manager"]),
-    createEmployee('michel', '159', ["CEO", "runner", "Teather"])
-    // createEmployee('shali', 356, rulesss),
-    // createEmployee('tzvi', 408, rulessss),
-    // createEmployee('gadi', 237, rulesss),
-    // createEmployee('shani', 375, rulessss)
-]
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     if (b[orderBy] < a[orderBy]) {
@@ -313,9 +190,9 @@ function getComparator<Key extends keyof any>(
     order: Order,
     orderBy: Key,
 ): (
-    a: { [key in Key]: E164Number | string },
-    b: { [key in Key]: E164Number | string },
-) => number {
+        a: { [key in Key]: string },
+        b: { [key in Key]: string },
+    ) => number {
     return order === 'desc'
         ? (a, b) => descendingComparator(a, b, orderBy)
         : (a, b) => -descendingComparator(a, b, orderBy);
@@ -337,7 +214,7 @@ function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) 
 
 interface HeadCell {
     disablePadding: boolean;
-    id: keyof Employee;
+    id: keyof EmployeeDTO;
     label: string;
     numeric: boolean;
 }
@@ -350,22 +227,22 @@ const headCells: readonly HeadCell[] = [
         label: ' Employee name',
     },
     {
-        id: 'phone',
+        id: 'phoneNumber',
         numeric: false,
         disablePadding: false,
         label: 'Phone number',
     },
     {
-        id: 'rules',
+        id: 'roles',
         numeric: false,
         disablePadding: false,
-        label: 'Rules',
+        label: 'Roles',
     }
 ];
 
 interface EnhancedTableProps {
     numSelected: number;
-    onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Employee) => void;
+    onRequestSort: (event: React.MouseEvent<unknown>, property: keyof EmployeeDTO) => void;
     onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
     order: Order;
     orderBy: string;
@@ -376,7 +253,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
         props;
     const createSortHandler =
-        (property: keyof Employee) => (event: React.MouseEvent<unknown>) => {
+        (property: keyof EmployeeDTO) => (event: React.MouseEvent<unknown>) => {
             onRequestSort(event, property);
         };
 
@@ -420,17 +297,71 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     );
 }
 
-function deleteSelectedEmp() {
-    //need to sent POST requst to server in order to delete all the selected employees
-    //need to re-rander the tale of the employees
+
+const  deleteSelectedEmp = async (selectedEmpToRemove: readonly string[], employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>) :Promise<void> => {
+    for (let i = 0; i < selectedEmpToRemove.length; i++) {
+    try{
+        //DELETE REQURST
+        const res = await (new EmployeeApi()).removeEmployee(selectedEmpToRemove[i]);
+        setEmployees(employees.filter(emp => emp.id !== selectedEmpToRemove[i]))
+        console.log("Sucsses to remove employee: " + selectedEmpToRemove[i]);
+    } catch (err) {
+        console.log("failed to remove employee: " + selectedEmpToRemove[i]);
+    }
+}
 }
 
+interface ButtonAddNewEmpProps{
+    employees: EmployeeDTO[];
+    setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>;
+    id: string;
+    disableElevation: boolean;
+    selectedRoles: string[];
+    phoneNumber: string;
+    valueNameEmp: string;
+}
+
+const  onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>,
+    valueNameEmp: string, phoneNumber: string, selectedRoles: string[]) :void => {
+    var newEmp:NewEmployeeDTO = {name:valueNameEmp,phoneNumber:phoneNumber,roles:selectedRoles};
+
+        if(valueNameEmp.length === 0 || !valueNameEmp.match(/[a-z]/i))
+        {
+            console.log("Employee name is not valid");
+        }
+        else if(phoneNumber.length === 0){
+            console.log("Employee phone is empty");
+        }
+        else if(selectedRoles.length === 0){
+            console.log("Employee roles is empty");
+        }
+        else{
+            sendNewEmployee(newEmp, employees, setEmployees);
+        }
+}
+
+const ButtonAddNewEmp = (props:ButtonAddNewEmpProps) =>{
+    const { employees, setEmployees, id, disableElevation, selectedRoles, phoneNumber, valueNameEmp} = props;
+    
+    return (
+        <Button id={id} variant="contained" disableElevation={disableElevation} style={{marginTop:"20px", marginRight:"10px"}} onClick={(event) => {
+            onclickAddEmp(employees, setEmployees,
+                valueNameEmp, phoneNumber, selectedRoles);
+        }}
+        >Add Employee</Button>
+    );
+}       
+
+
 interface EnhancedTableToolbarProps {
+    selectedEmpToRemove: readonly string[];
+    employees: EmployeeDTO[];
+    setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>;
     numSelected: number;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
-    const { numSelected } = props;
+    const { selectedEmpToRemove, employees, setEmployees, numSelected } = props;
 
     return (
         <Toolbar
@@ -455,7 +386,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             ) : (
                 <Typography
                     sx={{ flex: '1 1 100%' }}
-                    variant="h6"
+                    variant="h5"
                     id="tableTitle"
                     component="div"
                 >
@@ -464,7 +395,9 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             )}
             {numSelected > 0 ? (
                 <Tooltip title="Delete">
-                    <IconButton onClick={deleteSelectedEmp}>
+                    <IconButton onClick={(event) => { 
+                            deleteSelectedEmp(selectedEmpToRemove, employees, setEmployees);
+                    }}>
                         <DeleteIcon />
                     </IconButton>
                 </Tooltip>
@@ -484,31 +417,28 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 export const EmployeesPage = observer(() => {
     const [order, setOrder] = React.useState<Order>('asc');
-    const [orderBy, setOrderBy] = React.useState<keyof Employee>('name');
-    const [selected, setSelected] = React.useState<readonly string[]>([]);
+    const [orderBy, setOrderBy] = React.useState<keyof EmployeeDTO>('id');
+    const [selectedEmpToRemove, setSelectedEmpToRemove] = React.useState<readonly string[]>([]);
     const [page, setPage] = React.useState(0);
     const [dense, setDense] = React.useState(false);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
-
-
-    const [innerEmployees, setInnerEmployees] = React.useState<EmployeeDTO[]>([]);
+    const [employees, setEmployees] = React.useState<EmployeeDTO[]>([]);
+    const [selectedRoles, setSelectedRoles] = React.useState<string[]>([]);
+    const [phoneNumber, setValuePhoneEmp] = React.useState("");
+    const [valueNameEmp, setValueNameEmp] = React.useState("");
 
     const fetchEmployees = async () => {
         const employeesFromServer = await getEmployees();
-        setInnerEmployees(employeesFromServer);
+        setEmployees(employeesFromServer);
     }
 
     React.useEffect(() => {
         fetchEmployees();
     }, []);
 
-
-    // tip:
-    // manage all employees in a state inside the component here with useState
-
     const handleRequestSort = (
         event: React.MouseEvent<unknown>,
-        property: keyof Employee,
+        property: keyof EmployeeDTO,
     ) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
@@ -517,35 +447,35 @@ export const EmployeesPage = observer(() => {
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
-            const newSelecteds = employees.map((n) => n.name);
-            setSelected(newSelecteds);
+            const newSelecteds = employees.map((n) => n.id || "*error*");
+            setSelectedEmpToRemove(newSelecteds);
             return;
         }
-        setSelected([]);
+        setSelectedEmpToRemove([]);
     };
 
-    const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-        const selectedIndex = selected.indexOf(name);
+    const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
+        const selectedIndex = selectedEmpToRemove.indexOf(id);
         let newSelected: readonly string[] = [];
 
         if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, name);
+            newSelected = newSelected.concat(selectedEmpToRemove, id);
         } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
+            newSelected = newSelected.concat(selectedEmpToRemove.slice(1));
+        } else if (selectedIndex === selectedEmpToRemove.length - 1) {
+            newSelected = newSelected.concat(selectedEmpToRemove.slice(0, -1));
         } else if (selectedIndex > 0) {
             newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1),
+                selectedEmpToRemove.slice(0, selectedIndex),
+                selectedEmpToRemove.slice(selectedIndex + 1),
             );
         }
 
-        setSelected(newSelected);
+        setSelectedEmpToRemove(newSelected);
     };
 
     const handleChangePage = (event: unknown, newPage: number) => {
-        ////setPage(newPage); there is error here 
+        setPage(newPage); 
     };
 
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -557,92 +487,66 @@ export const EmployeesPage = observer(() => {
         setDense(event.target.checked);
     };
 
-    const isSelected = (name: string) => selected.indexOf(name) !== -1;
+    const isSelected = (id: string) => selectedEmpToRemove.indexOf(id) !== -1;
 
     // Avoid a layout jump when reaching the last page with empty employees.
     const emptyRows =
         page > 0 ? Math.max(0, (1 + page) * rowsPerPage - employees.length) : 0;
 
 
-    const {
-        getRootProps,
-        getInputLabelProps,
-        getInputProps,
-        getTagProps,
-        getListboxProps,
-        getOptionProps,
-        groupedOptions,
-        value,
-        focused,
-        setAnchorEl,
-    } = useAutocomplete({
-        id: 'customized-hook-demo',
-        defaultValue: [Rules[1]],
-        multiple: true,
-        options: Rules,
-        getOptionLabel: (option) => option.name,
-    });
-
-    const [phoneNumber, setValuePhoneEmp] = React.useState("");
 
 
-    //the type of the event wrong
-    const handleChangePhoneName = (e: any) => {
-        setValuePhoneEmp(e.target.value);
+  
+
+
+    //the type of the event is wrong
+    const handleChangePhoneName = (newPhone: E164Number | undefined) => {
+        setValuePhoneEmp(newPhone as string);
     };
 
-
-    const [valueNameEmp, setValueNameEmp] = React.useState("AMIT");
+    
 
     const handleChangeEmpName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
-        setValueNameEmp(e.target.value);
+        const name: string = e.target.value.toString();
+        if(name[name.length - 1] < '0' || name[name.length - 1] > '9' || name.length === 0)
+            setValueNameEmp(e.target.value);
     };
 
+   /// console.log(`selected roles: ${JSON.stringify(selectedRoles, undefined, 2)}`)
 
     return (<>
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
 
-
-            < div style={{ display: 'flex' }}>
-                <TextField id="nameEmpTextField" label="Name" variant="outlined" value={valueNameEmp} onChange={handleChangeEmpName} style={{ marginRight: "20px" }} />
+            < div style={{ display: 'flex'}}>
+                <TextField id="nameEmpTextField" label="Name" variant="outlined" value={valueNameEmp} onChange={handleChangeEmpName} style={{ marginRight: "20px", marginTop:"20px", marginLeft:"10px" }} />
                 <PhoneInput id="phoneEmpTextField" defaultCountry="IL" placeholder="Enter phone number" value={phoneNumber}
-                    onChange={handleChangePhoneName} style={{ marginRight: "20px" }} />
+                    onChange={handleChangePhoneName} style={{ marginRight: "20px", marginTop:"20px" }} />
 
-                <div style={{ display: "inline-block", marginRight: "20px" }}>
-                    <Label {...getInputLabelProps()}>Enter Rules</Label>
-                    <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>
-                        {value.map((option: RulesOption, index: number) => (
-                            <StyledTag label={option.name} {...getTagProps({ index })} />
-                        ))}
-                        <input {...getInputProps()} />
-                    </InputWrapper>
-
-                    {groupedOptions.length > 0 ? (
-                        <Listbox {...getListboxProps()}>
-                            {(groupedOptions as typeof Rules).map((option, index) => (
-                                <li {...getOptionProps({ option, index })}>
-                                    <span>{option.name}</span>
-                                    <CheckIcon fontSize="small" />
-                                </li>
-                            ))}
-                        </Listbox>
-                    ) : null}
+                <div style={{ display: "inline-block", marginRight: "20px", marginTop:"20px" }}>
+                    <Label>Enter Roles</Label>
+                    <div>
+                        <AsyncSelect
+                            isMulti
+                            cacheOptions
+                            onChange={(allSelected) => setSelectedRoles(allSelected.map((item: any) => item?.value))}
+                            loadOptions={(inputVal, cb) => {
+                                getRoles().then(RolesFromServer => {
+                                    cb(RolesFromServer.map(item => ({
+                                        value: item,
+                                        label: item
+                                    })));
+                                })
+                            }}
+                            defaultOptions
+                        />
+                    </div>
                 </div>
-
-                <Button id="addEmpButton" onClick={(event) => {
-                    employees.unshift(createEmployee(valueNameEmp, '305', ["CEO", "runner", "Teather"]));
-                    //need to send POST requst to server to add new employee
-                    //then need to re-rander the table of the employees
-                    sendNewEmployee(employees[1]);
-                    // todo: set inner state
-                    // using the setters of useState will trigger re-render
-                    
-                }} variant="contained" disableElevation>Add Employee</Button>
-
-
+                <ButtonAddNewEmp employees={employees} setEmployees={setEmployees} id={"addEmpButton"}
+                valueNameEmp={valueNameEmp} phoneNumber={phoneNumber} selectedRoles={selectedRoles}
+                disableElevation ={true}></ButtonAddNewEmp>
             </div>
 
-            <EnhancedTableToolbar numSelected={selected.length} />
+            <EnhancedTableToolbar selectedEmpToRemove={selectedEmpToRemove} employees={employees} setEmployees={setEmployees} numSelected={selectedEmpToRemove.length} />
             <TableContainer>
                 <Table
                     sx={{ minWidth: 750 }}
@@ -650,7 +554,7 @@ export const EmployeesPage = observer(() => {
                     size={dense ? 'small' : 'medium'}
                 >
                     <EnhancedTableHead
-                        numSelected={selected.length}
+                        numSelected={selectedEmpToRemove.length}
                         order={order}
                         orderBy={orderBy}
                         onSelectAllClick={handleSelectAllClick}
@@ -658,37 +562,33 @@ export const EmployeesPage = observer(() => {
                         rowCount={employees.length}
                     />
                     {<TableBody>
-
-                        {
-                            //dont know how to sort it like it was
-                        }
-                        {//stableSort<Employee>(employees, getComparator(order, orderBy))
-                            employees
-                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((employee, index) => {
-                                    const isItemSelected = isSelected(employee.name.toString());
+                        {//stableSort<EmployeeDTO>(employees, getComparator(order, orderBy))
+                            employees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((employee: EmployeeDTO, index: number) => {
+                                    const isItemSelected = isSelected((employee.id || "*error*").toString());
                                     const labelId = `enhanced-table-checkbox-${index}`;
 
                                     return (
                                         <TableRow
                                             hover
-                                            onClick={(event) => handleClick(event, employee.name.toString())}
                                             role="checkbox"
                                             aria-checked={isItemSelected}
                                             tabIndex={-1}
-                                            key={employee.name}
-                                            selected={isItemSelected}
-                                        >
-                                            <TableCell padding="checkbox">
+                                            key={employee.id}
+                                            selected={isItemSelected}>
+
+                                            <TableCell
+                                            padding="checkbox" 
+                                            onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
                                                 <Checkbox
                                                     color="primary"
                                                     checked={isItemSelected}
                                                     inputProps={{
                                                         'aria-labelledby': labelId,
-                                                    }}
-                                                />
+                                                    }}/>
                                             </TableCell>
                                             <TableCell
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}
                                                 component="th"
                                                 id={labelId}
                                                 scope="row"
@@ -696,8 +596,13 @@ export const EmployeesPage = observer(() => {
                                             >
                                                 {employee.name}
                                             </TableCell>
-                                            <TableCell align="right">{employee.phone}</TableCell>
-                                            <TableCell align="right">{CreateRulesListForEmp(employee)}</TableCell>
+                                            <TableCell align="right"
+                                             onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                {employee.phoneNumber}
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <RolesListForEmp employee={employee} />
+                                            </TableCell>
                                         </TableRow>
                                     );
                                 }
@@ -725,14 +630,15 @@ export const EmployeesPage = observer(() => {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
             />
-            <Button onClick={() => console.log(getEmployees())}>
-                Get All Employees
-            </Button>
         </Paper>
     </>
     );
 });
 
+
+function employee(employee: any, i: number) {
+    throw new Error('Function not implemented.');
+}
 /*
 ללחוץ על הכפתור ולהוסיף עובדים לטבלה עם בדיקת תקינות קלט
 אם מוחקים לי תפקיד מסויים אני צריך לעדכן במערכת עצמת ולמחוק מהטבלה
