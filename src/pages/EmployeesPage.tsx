@@ -39,6 +39,7 @@ import { EmployeeApi, EmployeeDTO, EmployeesDTO, NewEmployeeDTO, RoleApi, RoleDT
 import AsyncSelect from 'react-select/async';
 import cssVars from '@mui/system/cssVars';
 import { FormControlUnstyledContext } from '@mui/base';
+import { isGenerator } from 'mobx/dist/internal';
 
 
 const Root = styled('div')(
@@ -82,9 +83,14 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
             phoneNumber: employee.phoneNumber,
             roles: employee.roles
         });
+
+
+        //the id is the name just for now
+        var EmpToAdd: EmployeeDTO = {name:employee.name,phoneNumber:employee.phoneNumber,roles:employee.roles, id:employee.name};
+
         
         var tempemps = employees;
-        tempemps.unshift(employee);//PROBLEM: ADD EMP WITHOUT ID!!!
+        tempemps.unshift(EmpToAdd);//PROBLEM: ADD EMP WITHOUT ID!!!
         setEmployees([...tempemps]);
         console.log("Sucsses to set employee");
     } catch (err) {
@@ -119,11 +125,10 @@ const getRoles = async (): Promise<string[]> => {
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-const deleteRoleForEmp = async (employee:EmployeeDTO,indexRole:number) : Promise<void> => {
-    console.log(employee.name + "role: " + indexRole);
+const deleteRoleForEmp = async (employee:EmployeeDTO,role: string) : Promise<void> => {
+    console.log(employee.name + "role: " + role);
 
 
     //need to dominant this buuton to when a press on it it wiil not press the whole row or just to call setSelected() with specific row
@@ -146,7 +151,7 @@ function RolesListForEmp(props: RolesListForEmpProps) {
                 key={i}
                 secondaryAction={
                     <IconButton edge="end" aria-label="delete" onClick={(event) => {
-                        deleteRoleForEmp(props.employee, i);
+                        deleteRoleForEmp(props.employee, (props?.employee?.roles || [])[i]);
                     }}>
                         <DeleteIcon />
                     </IconButton>
@@ -319,8 +324,20 @@ interface ButtonAddNewEmpProps{
 const  onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>,
     valueNameEmp: string, phoneNumber: string, selectedRoles: string[]) :void => {
     var newEmp:NewEmployeeDTO = {name:valueNameEmp,phoneNumber:phoneNumber,roles:selectedRoles};
-    sendNewEmployee(newEmp, employees, setEmployees);
 
+        if(valueNameEmp.length === 0 || !valueNameEmp.match(/[a-z]/i))
+        {
+            console.log("Employee name is not valid");
+        }
+        else if(phoneNumber.length === 0){
+            console.log("Employee phone is empty");
+        }
+        else if(selectedRoles.length === 0){
+            console.log("Employee roles is empty");
+        }
+        else{
+            sendNewEmployee(newEmp, employees, setEmployees);
+        }
 }
 
 const ButtonAddNewEmp = (props:ButtonAddNewEmpProps) =>{
@@ -490,14 +507,15 @@ export const EmployeesPage = observer(() => {
     
 
     const handleChangeEmpName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
-        setValueNameEmp(e.target.value);
+        const name: string = e.target.value.toString();
+        if(name[name.length - 1] < '0' || name[name.length - 1] > '9' || name.length === 0)
+            setValueNameEmp(e.target.value);
     };
 
    /// console.log(`selected roles: ${JSON.stringify(selectedRoles, undefined, 2)}`)
 
     return (<>
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
-
 
             < div style={{ display: 'flex'}}>
                 <TextField id="nameEmpTextField" label="Name" variant="outlined" value={valueNameEmp} onChange={handleChangeEmpName} style={{ marginRight: "20px", marginTop:"20px", marginLeft:"10px" }} />
