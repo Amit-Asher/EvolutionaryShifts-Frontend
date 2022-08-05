@@ -12,7 +12,7 @@ import { PagesUrl } from '../interfaces/pages.meta';
 import { ComponentStatus } from '../interfaces/common';
 import { useEffect, useState } from 'react';
 import { LoadingPaper } from '../components/Loading/LoadingPaper';
-import { ConfigurationPanel, ControlFactory } from '../components/ConfigurationPanel/ConfigurationPanel';
+import { ConfigurationPanel, ControlFactory, ValueOfSchemaParam } from '../components/ConfigurationPanel/ConfigurationPanel';
 
 const supportedSelections: EvolutionaryOperatorDTO[] = [
     {
@@ -124,6 +124,35 @@ export const EvolutionPage = observer(() => {
         return <LoadingPaper />;
     }
 
+    const handleConfigChange = (schemaFamilyType: SchemaFamilyType, paramName: string, paramValue: any, idx: number = 0) => {
+        switch (schemaFamilyType) {
+            case SchemaFamilyType.Mutations:
+                evolutionStore.setMutation(
+                    evolutionStore.mutations?.[idx]?.type || '', 
+                    { ...evolutionStore.mutations?.[idx]?.params, [paramName]: paramValue },
+                    idx);
+                break;
+            case SchemaFamilyType.Selections:
+                evolutionStore.setSelection(
+                    evolutionStore.selection?.type || '', 
+                    { ...evolutionStore.selection?.params, [paramName]: paramValue });
+                break;
+            case SchemaFamilyType.Crossovers:
+                evolutionStore.setCrossover(
+                    evolutionStore.crossover?.type || '', 
+                    { ...evolutionStore.crossover?.params, [paramName]: paramValue });
+                break;
+            case SchemaFamilyType.TermConds:
+                evolutionStore.setTermCond(
+                    evolutionStore.termConds?.[idx]?.type || '', 
+                    { ...evolutionStore.termConds?.[idx]?.params, [paramName]: paramValue },
+                    idx);
+                break;
+            default:
+                console.log('unsupported schema family type');
+        }
+    }
+
     return (
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
             <div style={{
@@ -133,15 +162,16 @@ export const EvolutionPage = observer(() => {
                 {/* POPULATION SIZE + ELITISM */}
                 <div className='evo-mrg-bt-8'>
                     <TextField
+                        value={evolutionStore.populationSize}
                         id="outlined-search"
                         label="pupolation size"
                         type="number"
                         inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                         onChange={(e) => evolutionStore.setPopulationSize(parseInt(e.target.value))}
                         style={{ minWidth: "300px", marginRight: '15px' }}
-
                     />
                     <TextField
+                        value={evolutionStore.elitism}
                         id="outlined-search"
                         label="elitism"
                         type="number"
@@ -155,7 +185,7 @@ export const EvolutionPage = observer(() => {
 
                 {/* SELECTION */}
                 <div className='evo-mrg-bt-8'>
-                    <InputLabel id="selection-label">selection</InputLabel>
+                    <InputLabel id="selection-label">Selection</InputLabel>
                     <Select
                         /* find a way to make it no draw on edges like regular labels */
                         labelId="selection-label"
@@ -163,74 +193,56 @@ export const EvolutionPage = observer(() => {
                         id="demo-simple-select-helper"
                         value={evolutionStore.selection.type}
                         //label="Age" //no idea what does it do to add label need label id this doesnt add anything
-                        onChange={(e) => evolutionStore.setSelection(
-                            supportedSelections[0].type || '',
-                            {}
-                        )}
+                        onChange={(e) => {
+                            const schema = schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Selections)?.schemas?.find(schema => schema.name === e.target.value);
+                            evolutionStore.setSelection(e.target.value || '', {});
+                        }}
                         defaultValue="something" //remember to update state to defualt value
                     >
-                        {supportedSelections.map((supportedSelection: EvolutionaryOperatorDTO) => (
-                            <MenuItem value={supportedSelection.type}>{supportedSelection.type}</MenuItem>
+                        {schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Selections)?.schemas?.map((schema: SchemaDTO) => (
+                            <MenuItem value={schema.name}>{schema.name}</MenuItem>
                         ))}
                     </Select>
-                    {/* add controls dynamiclly depends on the type of selection chosen */}
-                    {/* understand why input validation doesnt work should only allow number here */}
-                    {/* <ConfigurationPanel params={supportedSelections[0].params} onChange={(input: string, paramName: string) => {}}/> */}
 
-                    <TextField
-                        id="outlined-search"
-                        label="probability"
-                        type="number"
-                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                        onChange={(e) => {
-                            evolutionStore.setSelection(
-                                evolutionStore.selection.type || '',
-                                {
-                                    ...evolutionStore.selection.params,
-                                    probability: parseFloat(e.target.value)
-                                }
-                            )
-                        }}
+                    <ConfigurationPanel
+                        params={schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Selections)?.schemas?.find(schema => schema.name === evolutionStore.selection.type)?.params || []}
+                        paramsValues={Object.entries(evolutionStore.selection.params).map(param => ({ name: param[0], value: param[1] }))}
+                        onChange={(paramName: string, paramValue: any) => handleConfigChange(SchemaFamilyType.Selections, paramName, paramValue)}
                     />
+                    <div style={{ height: '15px' }} />
                 </div>
 
                 <Divider style={{ marginBottom: '40px' }} />
 
                 {/* CROSSOVER */}
                 <div className='evo-mrg-bt-8'>
-                    <InputLabel id="crossover-label">crossover</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
+                    <InputLabel id="selection-label">Crossover</InputLabel>
                     <Select
+                        /* find a way to make it no draw on edges like regular labels */
                         labelId="crossover-label"
                         style={{ minWidth: "300px", marginRight: '15px' }}
-                        id="crossover-select"
+                        id="demo-simple-select-helper"
                         value={evolutionStore.crossover.type}
                         //label="Age" //no idea what does it do to add label need label id this doesnt add anything
+                        onChange={(e) => {
+                            const schema = schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Crossovers)?.schemas?.find(schema => schema.name === e.target.value);
+                            evolutionStore.setCrossover(e.target.value || '', {});
+                        }}
                         defaultValue="something" //remember to update state to defualt value
-                        onChange={(e) => evolutionStore.setCrossover(
-                            supportedCrossovers[0].type || '',
-                            {}
-                        )}
                     >
-                        {supportedCrossovers.map((supportedCrossover: EvolutionaryOperatorDTO) => (
-                            <MenuItem value={supportedCrossover.type}>{supportedCrossover.type}</MenuItem>
+                        {schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Crossovers)?.schemas?.map((schema: SchemaDTO) => (
+                            <MenuItem value={schema.name}>{schema.name}</MenuItem>
                         ))}
                     </Select>
-                    <TextField
-                        id="outlined-search"
-                        label="cutting points"
-                        type="number"
-                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                        onChange={(e) => {
-                            evolutionStore.setCrossover(
-                                evolutionStore.crossover.type || '',
-                                {
-                                    ...evolutionStore.crossover.params,
-                                    crossoverPoints: parseFloat(e.target.value)
-                                }
-                            )
-                        }}
+
+                    <ConfigurationPanel
+                        params={schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Crossovers)?.schemas?.find(schema => schema.name === evolutionStore.crossover.type)?.params || []}
+                        paramsValues={Object.entries(evolutionStore.crossover.params).map(param => ({ name: param[0], value: param[1] }))}
+                        onChange={(paramName: string, paramValue: any) => handleConfigChange(SchemaFamilyType.Crossovers, paramName, paramValue)}
                     />
+                    <div style={{ height: '15px' }} />
                 </div>
+
 
                 <Divider style={{ marginBottom: '40px' }} />
 
@@ -248,7 +260,7 @@ export const EvolutionPage = observer(() => {
 
                     {evolutionStore.mutations.map((mutation: EvolutionaryOperatorDTO, idx: number) => {
                         return <div>
-                            <InputLabel id="crossover-label">mutation</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
+                            <InputLabel id="crossover-label">Mutation</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
                             <Select
                                 labelId="mutation-label"
                                 style={{ minWidth: "300px", marginRight: '15px' }}
@@ -258,7 +270,7 @@ export const EvolutionPage = observer(() => {
                                 defaultValue="something" //remember to update state to defualt value
                                 onChange={(e) => {
                                     const schema = schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Mutations)?.schemas?.find(schema => schema.name === e.target.value);
-                                    evolutionStore.setMutation(e.target.value || '', schema?.params || {}, idx)
+                                    evolutionStore.setMutation(e.target.value || '', {}, idx)
                                 }}
                             >
                                 {schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Mutations)?.schemas?.map((schema: SchemaDTO) => (
@@ -275,10 +287,10 @@ export const EvolutionPage = observer(() => {
 
                             <ConfigurationPanel
                                 params={schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Mutations)?.schemas?.find(schema => schema.name === mutation.type)?.params || []}
+                                paramsValues={Object.entries(evolutionStore.mutations[idx].params).map(param => ({ name: param[0], value: param[1] }))}
+                                onChange={(paramName: string, paramValue: any) => handleConfigChange(SchemaFamilyType.Mutations, paramName, paramValue, idx)}
                             />
-                            <div style={{ height: '15px' }}>
-
-                            </div>
+                            <div style={{ height: '15px' }} />
                         </div>
                     })}
                 </div>
@@ -299,44 +311,39 @@ export const EvolutionPage = observer(() => {
 
                     {evolutionStore.termConds.map((termCond: EvolutionaryOperatorDTO, idx: number) => {
                         return <div>
-                            <InputLabel id="crossover-label">terminate condition</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
+                            <InputLabel id="crossover-label">Termination Condition</InputLabel> {/* find a way to make it no draw on edges like regular labels */}
                             <Select
-                                labelId="mutation-label"
+                                labelId="term-conds-label"
                                 style={{ minWidth: "300px", marginRight: '15px' }}
-                                id="mutation-select"
+                                id="term-conds-select"
                                 value={termCond?.type || ''}
                                 //label="Age" //no idea what does it do to add label need label id this doesnt add anything
                                 defaultValue="something" //remember to update state to defualt value
-                                onChange={(e) => evolutionStore.setTermCond(supportedTermConds[0].type || '', {}, idx)}
+                                onChange={(e) => {
+                                    const schema = schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.TermConds)?.schemas?.find(schema => schema.name === e.target.value);
+                                    evolutionStore.setTermCond(e.target.value || '', {}, idx);
+                                }}
                             >
-                                {supportedTermConds.map((supportedTermCond: EvolutionaryOperatorDTO) => (
-                                    <MenuItem value={supportedTermCond.type}>{supportedTermCond.type}</MenuItem>
+                                {schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.TermConds)?.schemas?.map((schema: SchemaDTO) => (
+                                    <MenuItem value={schema.name}>{schema.name}</MenuItem>
                                 ))}
                             </Select>
-                            <TextField
-                                key={`outlined-search-${idx}`}
-                                id={`outlined-search-${idx}`}
-                                label="count"
-                                type="number"
-                                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                                value={termCond?.params?.count}
-                                onChange={(e) => {
-                                    evolutionStore.setTermCond(
-                                        evolutionStore.termConds[idx].type || '',
-                                        {
-                                            ...evolutionStore.termConds[idx].params,
-                                            count: parseFloat(e.target.value)
-                                        },
-                                        idx
-                                    )
-                                }}
-                            />
+
                             <IconButton
                                 aria-label="delete"
                                 onClick={() => evolutionStore.removeTermCond(idx)}
                             >
                                 <DeleteIcon />
                             </IconButton>
+
+                            <ConfigurationPanel
+                                params={schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.TermConds)?.schemas?.find(schema => schema.name === termCond.type)?.params || []}
+                                paramsValues={Object.entries(evolutionStore.termConds[idx].params).map(param => ({ name: param[0], value: param[1] }))}
+                                onChange={(paramName: string, paramValue: any) => handleConfigChange(SchemaFamilyType.TermConds, paramName, paramValue, idx)}
+                            />
+                            <div style={{ height: '15px' }}>
+
+                            </div>
                         </div>
                     })}
                 </div>

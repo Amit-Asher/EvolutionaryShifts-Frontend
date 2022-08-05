@@ -656,6 +656,36 @@
           "deprecated": false
         }
       },
+      "/api/getRulesOptions": {
+        "get": {
+          "tags": [
+            "arrangement"
+          ],
+          "summary": "getRulesOptions",
+          "operationId": "getRulesOptions",
+          "produces": [
+            "*/*"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/SchemaFamilyDTO"
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "Forbidden"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "deprecated": false
+        }
+      },
       "/api/getSchemas": {
         "get": {
           "tags": [

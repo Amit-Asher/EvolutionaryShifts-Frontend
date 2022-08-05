@@ -21,7 +21,7 @@ export class GlobalStore {
     constructor() {
         this.notificationStore = new NotificationStore();
         this.arrangementStore = new ArrangementStore();
-        this.evolutionStore = new EvolutionStore();
+        this.evolutionStore = new EvolutionStore(this.notificationStore);
         this.preferenceStore = new PreferenceStore();
         makeObservable(this)
     }

@@ -11,7 +11,7 @@ import {
 import { ArrangementStore } from "../stores/arrangementStore";
 import { globalStore } from "../stores/globalStore";
 import { observer } from "mobx-react";
-import { EmployeeDTO } from "../swagger/stubs";
+import { EmployeeDTO, SchemaDTO, SchemaFamilyDTO } from "../swagger/stubs";
 import { mock } from "../mocks/mockData";
 import { useEffect, useState } from "react";
 import TimeTable from "../components/TimeTable/TimeTable";
@@ -28,7 +28,7 @@ export const NewArrangementPage = observer(() => {
   const navigate = useNavigate();
   const [allRoles, setAllRoles] = useState<string[]>([]);
   const [allEmployees, setAllEmployees] = useState<EmployeeDTO[]>([]);
-  const [allRules, setAllRules] = useState<string[]>([]);
+  const [allRules, setAllRules] = useState<SchemaFamilyDTO>({});
   const [status, setStatus] = useState<ComponentStatus>(
     ComponentStatus.LOADING
   );
@@ -37,9 +37,10 @@ export const NewArrangementPage = observer(() => {
     const fetchRoles = async () => {
       const employees: EmployeeDTO[] = await companyService.getEmployees();
       const roles: string[] = await companyService.getRoles();
+      const allRules: SchemaFamilyDTO = await arrangementService.getRulesOptions();
       setAllRoles(roles);
       setAllEmployees(employees);
-      setAllRules(mock.rules); // TODO: add route to api and get rules metadata from there
+      setAllRules(allRules);
       setStatus(ComponentStatus.READY);
     };
     fetchRoles();
@@ -130,33 +131,33 @@ export const NewArrangementPage = observer(() => {
 
       {/* RULE WEIGHTS */}
       <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
-        {allRules?.map((rule: string) => {
-          const labelId = `rule-${rule}`;
+        {allRules?.schemas?.map((rule: SchemaDTO) => {
+          const labelId = `rule-${rule?.name}`;
           return (
-            <ListItem key={rule} disablePadding>
+            <ListItem key={rule?.name} disablePadding style={{ width: '450px' }}>
               <Checkbox
                 onChange={(enable) =>
                   enable.target.checked
-                    ? arrangementStore.enableRule(rule)
-                    : arrangementStore.disableRule(rule)
+                    ? arrangementStore.enableRule(rule?.name)
+                    : arrangementStore.disableRule(rule?.name)
                 }
                 checked={arrangementStore.selectedRules.some(
                   (selectedRule) =>
-                    selectedRule.ruleName === rule && selectedRule.enable
+                    selectedRule.ruleName === rule?.name && selectedRule.enable
                 )}
               />
-              <ListItemText id={labelId} primary={`${rule}`} />
+              <ListItemText id={labelId} primary={`${rule?.name}`} />
               <TextField
                 type="number"
                 value={
                   arrangementStore.selectedRules.find(
-                    (selectedRule) => selectedRule.ruleName === rule
+                    (selectedRule) => selectedRule.ruleName === rule?.name
                   )?.weight || undefined
                 }
                 variant="outlined"
                 onChange={(e) =>
                   arrangementStore.setRuleWeight(
-                    rule,
+                    rule?.name,
                     parseFloat(e.target.value)
                   )
                 }

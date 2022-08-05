@@ -46,7 +46,11 @@ export class ArrangementStore {
     }
 
     @action
-    public setRuleWeight(rule: string, weight: number) {
+    public setRuleWeight(rule: string | undefined, weight: number) {
+        if (!rule) {
+            return;
+        }
+
         // remove old
         this.selectedRules = this.selectedRules?.filter(selectedRule => selectedRule.ruleName !== rule);
         // add new (always overide)
@@ -55,10 +59,16 @@ export class ArrangementStore {
             weight: weight ?? 0,
             enable: true
         });
+
+        console.log(`this.selectedRules: ${JSON.stringify(this.selectedRules, undefined, 2)}`)
     }
 
     @action
-    public enableRule(rule: string) {
+    public enableRule(rule: string | undefined) {
+        if (!rule) {
+            return;
+        }
+
         const selectedRule = this.selectedRules?.find(selectedRule => selectedRule.ruleName === rule);
 
         if (selectedRule) { // rule found
@@ -71,14 +81,20 @@ export class ArrangementStore {
             weight: 0,
             enable: true
         });
+        console.log(`this.selectedRules: ${JSON.stringify(this.selectedRules, undefined, 2)}`)
     }
 
     @action
-    public disableRule(rule: string) {
+    public disableRule(rule: string | undefined) {
+        if (!rule) {
+            return;
+        }
+
         const selectedRule = this.selectedRules?.find(selectedRule => selectedRule.ruleName === rule);
         if (selectedRule) { // rule found
             selectedRule.enable = false;
         }
+        console.log(`this.selectedRules: ${JSON.stringify(this.selectedRules, undefined, 2)}`)
     }
 
     @computed

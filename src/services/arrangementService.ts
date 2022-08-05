@@ -1,13 +1,33 @@
 import { globalStore } from '../stores/globalStore';
-import { ArrangementApi, PropertiesDTO, SlotsPreferencesDTO, EmpSlotsPreferenceDTO, EmployeeApi, EmployeePreferencesDTO } from './../swagger/stubs/api';
+import { ArrangementApi, PropertiesDTO, SlotsPreferencesDTO, EmpSlotsPreferenceDTO, EmployeeApi, EmployeePreferencesDTO, SchemaFamilyDTO } from './../swagger/stubs/api';
 import { emptyProperties, isPropertiesEmpty } from './arrangement.utils';
 
 class ArrangementService {
 
     preferencesCache: EmpSlotsPreferenceDTO[] = [];
     propertiesCache: PropertiesDTO = emptyProperties;
+    rulesOptionsCache: SchemaFamilyDTO = {};
 
     constructor() {
+    }
+
+    public async getRulesOptions(): Promise<SchemaFamilyDTO> {
+        try {
+            if (isPropertiesEmpty(this.propertiesCache)) {
+                const res: SchemaFamilyDTO = await (new ArrangementApi()).getRulesOptions();
+                if (!res) {
+                    globalStore.notificationStore.show({ message: 'Failed to fetch rules options' });
+                    return {};
+                }
+                this.rulesOptionsCache = res ?? {};
+            }
+            return this.rulesOptionsCache ?? {};
+
+        } catch (err) {
+            globalStore.notificationStore.show({ message: 'Failed to fetch rules options' });
+            console.error('Failed to fetch rules options');
+            return this.rulesOptionsCache ?? {};
+        }
     }
 
     public async sendProperties(properties: PropertiesDTO): Promise<void> {

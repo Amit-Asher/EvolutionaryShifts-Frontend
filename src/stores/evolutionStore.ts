@@ -1,8 +1,11 @@
+import { NotificationStore } from './notificationStore';
 import { AlgorithmConfigDTO, EvolutionaryOperatorDTO } from './../swagger/stubs/api';
 import { action, computed, makeAutoObservable, observable } from "mobx"
 
 // holds all the state related to create new arrangement flow
 export class EvolutionStore {
+
+    private notificationStore: NotificationStore;
 
     @observable
     public selection: EvolutionaryOperatorDTO = {
@@ -35,7 +38,8 @@ export class EvolutionStore {
     public populationSize: number = 0;
 
 
-    constructor() {
+    constructor(notificationStore: NotificationStore) {
+        this.notificationStore = notificationStore;
         makeAutoObservable(this, {}, { autoBind: true })
     }
 
@@ -102,7 +106,15 @@ export class EvolutionStore {
 
     @action
     public setTermCond(type: string, params: any, idx: number) {
+        const isExist = this.termConds.some(termCond => termCond.type === type);
+        const emptyParams = Object.keys(params).length === 0;
+        if (isExist && emptyParams) {
+            this.notificationStore.show({ message: 'Termination Condition Already Exist!' });
+            return;
+        }
+
         this.termConds[idx] = { type, params };
+        console.log(`this.termConds: ${JSON.stringify(this.termConds, undefined, 2)}`)
     }
 
     @computed
