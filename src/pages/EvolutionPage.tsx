@@ -3,12 +3,16 @@ import Paper from '@mui/material/Paper';
 import { observer } from 'mobx-react';
 import { EvolutionStore } from '../stores/evolutionStore';
 import { globalStore } from '../stores/globalStore';
-import { EvolutionaryOperatorDTO } from '../swagger/stubs';
+import { EvolutionaryOperatorDTO, SchemaDTO, SchemaFamilyDTO } from '../swagger/stubs';
 import DeleteIcon from '@mui/icons-material/Delete';
 import '../themes/evolutionPage.css';
 import { evolutionService } from '../services/evolutionService';
 import { useNavigate } from 'react-router';
 import { PagesUrl } from '../interfaces/pages.meta';
+import { ComponentStatus } from '../interfaces/common';
+import { useEffect, useState } from 'react';
+import { LoadingPaper } from '../components/Loading/LoadingPaper';
+import { ConfigurationPanel, ControlFactory } from '../components/ConfigurationPanel/ConfigurationPanel';
 
 const supportedSelections: EvolutionaryOperatorDTO[] = [
     {
@@ -90,9 +94,35 @@ const supportedTermConds: EvolutionaryOperatorDTO[] = [
     }
 ]
 
+
+enum SchemaFamilyType {
+    Mutations = 'mutations',
+    Crossovers = 'crossovers',
+    Selections = 'selections',
+    TermConds = 'term_conds'
+}
+
 export const EvolutionPage = observer(() => {
     const evolutionStore: EvolutionStore = globalStore.evolutionStore;
     const navigate = useNavigate();
+    const [schemas, setSchemas] = useState<SchemaFamilyDTO[]>([]);
+    const [status, setStatus] = useState<ComponentStatus>(ComponentStatus.LOADING);
+
+
+    useEffect(() => {
+        const fetchSchemas = async () => {
+            const allSchemas = await evolutionService.getSchemas();
+            setSchemas(allSchemas);
+            setStatus(ComponentStatus.READY);
+        }
+
+        fetchSchemas();
+    }, []);
+
+
+    if (status !== ComponentStatus.READY) {
+        return <LoadingPaper />;
+    }
 
     return (
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
@@ -121,7 +151,8 @@ export const EvolutionPage = observer(() => {
                 </div>
 
                 <Divider style={{ marginBottom: '40px' }} />
-                
+
+
                 {/* SELECTION */}
                 <div className='evo-mrg-bt-8'>
                     <InputLabel id="selection-label">selection</InputLabel>
@@ -205,9 +236,7 @@ export const EvolutionPage = observer(() => {
 
                 {/* MUTATIONS */}
                 <div className='evo-mrg-bt-8'>
-                    <div>
 
-                    </div>
                     <Button
                         variant="contained"
                         onClick={() => evolutionStore.addMutation()}
@@ -227,35 +256,29 @@ export const EvolutionPage = observer(() => {
                                 value={mutation?.type || ''}
                                 //label="Age" //no idea what does it do to add label need label id this doesnt add anything
                                 defaultValue="something" //remember to update state to defualt value
-                                onChange={(e) => evolutionStore.setMutation(supportedMutations[0].type || '', {}, idx)}
+                                onChange={(e) => {
+                                    const schema = schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Mutations)?.schemas?.find(schema => schema.name === e.target.value);
+                                    evolutionStore.setMutation(e.target.value || '', schema?.params || {}, idx)
+                                }}
                             >
-                                {supportedMutations.map((supportedMutation: EvolutionaryOperatorDTO) => (
-                                    <MenuItem value={supportedMutation.type}>{supportedMutation.type}</MenuItem>
+                                {schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Mutations)?.schemas?.map((schema: SchemaDTO) => (
+                                    <MenuItem value={schema.name}>{schema.name}</MenuItem>
                                 ))}
                             </Select>
-                            <TextField
-                                id="outlined-search"
-                                label="probability"
-                                type="number"
-                                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                                value={mutation?.params?.probability}
-                                onChange={(e) => {
-                                    evolutionStore.setMutation(
-                                        evolutionStore.mutations[idx].type || '',
-                                        {
-                                            ...evolutionStore.mutations[idx].params,
-                                            probability: parseFloat(e.target.value)
-                                        },
-                                        idx
-                                    )
-                                }}
-                            />
+
                             <IconButton
                                 aria-label="delete"
                                 onClick={() => evolutionStore.removeMutation(idx)}
                             >
                                 <DeleteIcon />
                             </IconButton>
+
+                            <ConfigurationPanel
+                                params={schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Mutations)?.schemas?.find(schema => schema.name === mutation.type)?.params || []}
+                            />
+                            <div style={{ height: '15px' }}>
+
+                            </div>
                         </div>
                     })}
                 </div>
@@ -304,7 +327,7 @@ export const EvolutionPage = observer(() => {
                                             ...evolutionStore.termConds[idx].params,
                                             count: parseFloat(e.target.value)
                                         },
-                                     idx
+                                        idx
                                     )
                                 }}
                             />

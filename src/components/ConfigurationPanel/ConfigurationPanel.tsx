@@ -1,42 +1,22 @@
 import { TextField } from "@mui/material";
 import { observer } from "mobx-react";
-
-interface ControlParam {
-    type: "string" | "number" | "boolean" | "date" | "selection";
-    name: string;
-    options?: string[];
-}
+import { ParamOfSchemaDTO } from "../../swagger/stubs";
 
 interface ConfigurationPanelProps {
-    params: ControlParam[];
-    onChange: (input: string) => void;
+    params: ParamOfSchemaDTO[];
+    onChange?: (input: string) => void;
 }
 
-class ControlFactory {
-    public static createControlByParam = (param: ControlParam, onChange: () => void) => {
+export class ControlFactory {
+    public static createControlByParam = (param: ParamOfSchemaDTO, onChange?: () => void) => {
         if (param.type === "string") {
             return (
-                <TextField onChange={onChange} placeholder={param.name} />
+                <TextField onChange={onChange} placeholder={param.name} style={{ width: '300px', marginTop: '10px', marginRight: '15px' }} />
             )
         }
         if (param.type === "number") {
             return (
-                <TextField onChange={onChange} placeholder={param.name} type="number" />
-            )
-        }
-        if (param.type === "boolean") {
-            return (
-                <TextField onChange={onChange} placeholder={param.name} />
-            )
-        }
-        if (param.type === "date") {
-            return (
-                <TextField onChange={onChange} placeholder={param.name} />
-            )
-        }
-        if (param.type === "selection") {
-            return (
-                <TextField onChange={onChange} placeholder={param.name} />
+                <TextField onChange={onChange} placeholder={param.name} type="number" style={{ width: '300px', marginTop: '10px', marginRight: '15px' }} />
             )
         }
     }
@@ -45,7 +25,7 @@ class ControlFactory {
 export const ConfigurationPanel = observer((props: ConfigurationPanelProps) => {
     return (
         <div>
-            {props?.params.map((param: ControlParam) => {
+            {props?.params.map((param: ParamOfSchemaDTO) => {
                 return ControlFactory.createControlByParam(param, () => {});
             })}
         </div>

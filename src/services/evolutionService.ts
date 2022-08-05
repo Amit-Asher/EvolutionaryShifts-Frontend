@@ -1,7 +1,9 @@
 import { globalStore } from './../stores/globalStore';
-import { EmployeeDTO, RoleDTO, CompanyApi, EmployeeApi, RoleApi, EvolutionApi, AlgorithmConfigDTO } from './../swagger/stubs/api';
+import { EmployeeDTO, RoleDTO, CompanyApi, EmployeeApi, RoleApi, EvolutionApi, AlgorithmConfigDTO, SchemaFamilyDTO } from './../swagger/stubs/api';
 
 class EvolutionService {
+
+    schemasCache: SchemaFamilyDTO[] = [];
 
     constructor() {
     }
@@ -22,6 +24,23 @@ class EvolutionService {
         }
     }
 
+    public async getSchemas() {
+        try {
+            if (this.schemasCache.length === 0) {
+                const res = await (new EvolutionApi()).getSchemas();
+                if (!res) {
+                    globalStore.notificationStore.show({ message: 'Failed to fetch employees' });
+                    return [];
+                }
+                this.schemasCache = res ?? [];
+            }
+            return this.schemasCache ?? [];
+        } catch (err) {
+            globalStore.notificationStore.show({ message: 'Failed to fetch employees' });
+            console.error('[companyService][getEmployees] Failed to fetch employees');
+            return this.schemasCache ?? [];
+        }
+    }
 }
 
 export const evolutionService = new EvolutionService();

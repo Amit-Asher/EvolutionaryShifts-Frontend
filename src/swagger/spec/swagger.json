@@ -656,6 +656,39 @@
           "deprecated": false
         }
       },
+      "/api/getSchemas": {
+        "get": {
+          "tags": [
+            "evolution"
+          ],
+          "summary": "getSchemas",
+          "operationId": "getSchemas",
+          "produces": [
+            "*/*"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/SchemaFamilyDTO"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "Forbidden"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "deprecated": false
+        }
+      },
       "/api/getSolution": {
         "get": {
           "tags": [
@@ -1445,6 +1478,18 @@
         },
         "title": "NewEmployeeDTO"
       },
+      "ParamOfSchemaDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "title": "ParamOfSchemaDTO"
+      },
       "PrfSlotDTO": {
         "type": "object",
         "properties": {
@@ -1549,6 +1594,36 @@
           }
         },
         "title": "RuleWeightDTO"
+      },
+      "SchemaDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "params": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ParamOfSchemaDTO"
+            }
+          }
+        },
+        "title": "SchemaDTO"
+      },
+      "SchemaFamilyDTO": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string"
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/SchemaDTO"
+            }
+          }
+        },
+        "title": "SchemaFamilyDTO"
       },
       "ShiftDTO": {
         "type": "object",

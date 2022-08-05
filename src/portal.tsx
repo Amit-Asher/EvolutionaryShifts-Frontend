@@ -60,7 +60,7 @@ export default function Portal() {
                         path={PagesUrl.Arrangement_Publish}
                         element={
                             <PageFrame
-                                pageComponent={ComingSoonPage}
+                                pageComponent={PublishPage}
                                 subtabs={arrangementPageSubTabs}
                             />
                         }
