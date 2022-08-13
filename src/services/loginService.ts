@@ -5,7 +5,7 @@ export namespace loginService {
     export async function doLogin(email: string, password: string): Promise<void> {
         try {
             // todo: fix api- only email + password
-            const res: any = (new LoginApi()).doLogin({
+            const res: any = await (new LoginApi()).doLogin({
                 username: email,
                 password
             },{ credentials: 'include' });
@@ -22,7 +22,7 @@ export namespace loginService {
 
     export async function doLogout(): Promise<void> {
         try {
-            const res: any = (new LoginApi()).doLogout({ credentials: 'include' });
+            const res: any = await (new LoginApi()).doLogout({ credentials: 'include' });
             if (!res.success) {
                 throw new Error("Failed to logout");
             }
@@ -41,7 +41,7 @@ export namespace loginService {
     ): Promise<void> {
         try {
             // todo: fix api- manage this entire structure in the BE
-            const res: any = (new LoginApi()).doSignup({
+            const res: any = await (new LoginApi()).doSignup({
                 username: email,
                 password
                 // firstName,
@@ -60,7 +60,7 @@ export namespace loginService {
     export async function doSignout(): Promise<void> {
         try {
             // todo: fix api- no credentials needed here (get uesrname from context)
-            const res: any = (new LoginApi()).doSignout({}, { credentials: 'include' });
+            const res: any = await (new LoginApi()).doSignout({}, { credentials: 'include' });
             if (!res.success) {
                 throw new Error("Failed to signout");
             }

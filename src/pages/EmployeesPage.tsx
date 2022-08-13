@@ -514,37 +514,8 @@ export const EmployeesPage = observer(() => {
 
     /// console.log(`selected roles: ${JSON.stringify(selectedRoles, undefined, 2)}`)
 
-
-    const testAuth = async () => {
-        var raw = JSON.stringify({
-            "username": "amit",
-            "password": "1234"
-        });
-    
-        var requestOptions: any = {
-            method: 'POST',
-            credentials: 'include', // that was the important line
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: raw
-        };
-    
-        fetch("http://localhost:8080/api/doSignup", requestOptions)
-            .then(response => response.text())
-            .then(result => console.log(result))
-            .catch(error => console.log('error', error));
-        
-    }
-
     return (<>
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
-
-            <Button onClick={() => testAuth()}>
-                Set cookie
-            </Button>
-
-
             < div style={{ display: 'flex' }}>
                 <TextField id="nameEmpTextField" label="Name" variant="outlined" value={valueNameEmp} onChange={handleChangeEmpName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
                 <PhoneInput id="phoneEmpTextField" defaultCountry="IL" placeholder="Enter phone number" value={phoneNumber}

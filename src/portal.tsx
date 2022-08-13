@@ -14,6 +14,7 @@ import { arrangementPageSubTabs, PagesUrl } from "./interfaces/pages.meta";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { SignupPage } from "./pages/SignupPage";
 import { LoginPage } from "./pages/LoginPage";
+import { SettingsPage } from "./pages/SettingsPage";
 
 export default function Portal() {
     return (
@@ -104,7 +105,7 @@ export default function Portal() {
                     />
                     <Route
                         path={PagesUrl.Settings}
-                        element={<PageFrame pageComponent={ComingSoonPage} subtabs={[]} />}
+                        element={<PageFrame pageComponent={SettingsPage} subtabs={[]} />}
                     />
                     <Route
                         path={PagesUrl.Premium}
