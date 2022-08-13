@@ -21,7 +21,7 @@ export class PreferenceStore {
         if (!this.employeesPreferences[employee.id]) {
             this.employeesPreferences[employee.id] = {
                 employeeId: employee.id,
-                employeeName: employee.name,
+                employeeName: employee.fullName,
                 preferences: {
                     RuleSlots: {
                         slots: [employeePrfSlot]

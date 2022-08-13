@@ -80,14 +80,24 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
     try {
         // POST REQUEST
         const res = await (new EmployeeApi()).addEmployee({
-            name: employee.name,
+            firstName: employee.firstName,
+            lastName: employee.lastName,
+            email: employee.email,
+            password: employee.password,
             phoneNumber: employee.phoneNumber,
             roles: employee.roles
         });
 
 
         //the id is the name just for now
-        var EmpToAdd: EmployeeDTO = { name: employee.name, phoneNumber: employee.phoneNumber, roles: employee.roles, id: employee.name };
+        var EmpToAdd: EmployeeDTO = { 
+            firstName: employee.firstName, 
+            lastName: employee.lastName, 
+            email: employee.email, 
+            password: employee.password, 
+            phoneNumber: employee.phoneNumber,
+            roles: employee.roles,
+            id: employee.firstName };
 
 
         var tempemps = employees;
@@ -104,7 +114,7 @@ const getEmployees = async (): Promise<EmployeeDTO[]> => {
         // GET REQUEST
         const res: EmployeesDTO = await (new EmployeeApi()).getAllEmployees();
         const employees: EmployeeDTO[] = res.employees ?? [];
-        //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
+        console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
         return employees;
     } catch (err) {
         console.log('failed to get employees');
@@ -129,7 +139,7 @@ const getRoles = async (): Promise<string[]> => {
 
 
 const deleteRoleForEmp = async (employee: EmployeeDTO, role: string): Promise<void> => {
-    console.log(employee.name + "role: " + role);
+    console.log(employee.firstName + " " + employee.lastName + "role: " + role);
 
 
     //need to dominant this buuton to when a press on it it wiil not press the whole row or just to call setSelected() with specific row
@@ -222,10 +232,28 @@ interface HeadCell {
 
 const headCells: readonly HeadCell[] = [
     {
-        id: 'name',
+        id: 'firstName',
         numeric: false,
         disablePadding: true,
-        label: ' Employee name',
+        label: ' First Name',
+    },
+    {
+        id: 'lastName',
+        numeric: false,
+        disablePadding: true,
+        label: ' Last Name',
+    },
+    {
+        id: 'email',
+        numeric: false,
+        disablePadding: true,
+        label: ' Email',
+    },
+    {
+        id: 'password',
+        numeric: false,
+        disablePadding: true,
+        label: 'password',
     },
     {
         id: 'phoneNumber',
@@ -319,14 +347,24 @@ interface ButtonAddNewEmpProps {
     disableElevation: boolean;
     selectedRoles: string[];
     phoneNumber: string;
-    valueNameEmp: string;
+    valueFirstNameEmp: string;
+    valueLastNameEmp: string;
+    valueEmailEmp: string;
+    //valuePasswordEmp: string;
+
 }
 
 const onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>,
-    valueNameEmp: string, phoneNumber: string, selectedRoles: string[]): void => {
-    var newEmp: NewEmployeeDTO = { name: valueNameEmp, phoneNumber: phoneNumber, roles: selectedRoles };
+    valueFirstNameEmp: string, valueLastNameEmp: string,valueEmailEmp:string, phoneNumber: string, selectedRoles: string[]): void => {
+    var newEmp: NewEmployeeDTO = { 
+        firstName: valueFirstNameEmp,
+        lastName: valueFirstNameEmp,
+        email: valueFirstNameEmp,
+        password: "password-ui",
+        phoneNumber: phoneNumber,
+        roles: selectedRoles };
 
-    if (valueNameEmp.length === 0 || !valueNameEmp.match(/[a-z]/i)) {
+    if (valueFirstNameEmp.length === 0 || !valueFirstNameEmp.match(/[a-z]/i)) {
         console.log("Employee name is not valid");
     }
     else if (phoneNumber.length === 0) {
@@ -341,12 +379,13 @@ const onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<Re
 }
 
 const ButtonAddNewEmp = (props: ButtonAddNewEmpProps) => {
-    const { employees, setEmployees, id, disableElevation, selectedRoles, phoneNumber, valueNameEmp } = props;
+    const { employees, setEmployees, id, disableElevation, 
+        selectedRoles, phoneNumber, valueFirstNameEmp, valueLastNameEmp, valueEmailEmp } = props;
 
     return (
         <Button id={id} variant="contained" disableElevation={disableElevation} style={{ marginTop: "20px", marginRight: "10px" }} onClick={(event) => {
             onclickAddEmp(employees, setEmployees,
-                valueNameEmp, phoneNumber, selectedRoles);
+                valueFirstNameEmp, valueLastNameEmp, valueEmailEmp, phoneNumber, selectedRoles);
         }}
         >Add Employee</Button>
     );
@@ -425,7 +464,11 @@ export const EmployeesPage = observer(() => {
     const [employees, setEmployees] = React.useState<EmployeeDTO[]>([]);
     const [selectedRoles, setSelectedRoles] = React.useState<string[]>([]);
     const [phoneNumber, setValuePhoneEmp] = React.useState("");
-    const [valueNameEmp, setValueNameEmp] = React.useState("");
+    const [valueFirstNameEmp, setValueFirstNameEmp] = React.useState("");
+    const [valueLasttNameEmp, setValueLasttNameEmp] = React.useState("");
+    const [valueEmailEmp, setValueEmailEmp] = React.useState("");
+
+
 
     const fetchEmployees = async () => {
         const employeesFromServer = await getEmployees();
@@ -506,10 +549,20 @@ export const EmployeesPage = observer(() => {
 
 
 
-    const handleChangeEmpName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+    const handleChangeEmpFirstName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
         const name: string = e.target.value.toString();
         if (name[name.length - 1] < '0' || name[name.length - 1] > '9' || name.length === 0)
-            setValueNameEmp(e.target.value);
+        setValueFirstNameEmp(e.target.value);
+    };
+
+    const handleChangeEmpLastName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+        const name: string = e.target.value.toString();
+        if (name[name.length - 1] < '0' || name[name.length - 1] > '9' || name.length === 0)
+        setValueLasttNameEmp(e.target.value);
+    };
+
+    const handleChangeEmpEmail = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+        setValueLasttNameEmp(e.target.value);
     };
 
     /// console.log(`selected roles: ${JSON.stringify(selectedRoles, undefined, 2)}`)
@@ -517,7 +570,12 @@ export const EmployeesPage = observer(() => {
     return (<>
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
             < div style={{ display: 'flex' }}>
-                <TextField id="nameEmpTextField" label="Name" variant="outlined" value={valueNameEmp} onChange={handleChangeEmpName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
+                <TextField id="firstNameEmpTextField" label="First Name" variant="outlined" value={valueFirstNameEmp}
+                 onChange={handleChangeEmpFirstName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
+                <TextField id="LastNameEmpTextField" label="Last Name" variant="outlined" value={valueLasttNameEmp}
+                 onChange={handleChangeEmpLastName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
+                <TextField id="EmailEmpTextField" label="Email" variant="outlined" value={valueEmailEmp}
+                 onChange={handleChangeEmpEmail} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
                 <PhoneInput id="phoneEmpTextField" defaultCountry="IL" placeholder="Enter phone number" value={phoneNumber}
                     onChange={handleChangePhoneName} style={{ marginRight: "20px", marginTop: "20px" }} />
 
@@ -541,7 +599,11 @@ export const EmployeesPage = observer(() => {
                     </div>
                 </div>
                 <ButtonAddNewEmp employees={employees} setEmployees={setEmployees} id={"addEmpButton"}
-                    valueNameEmp={valueNameEmp} phoneNumber={phoneNumber} selectedRoles={selectedRoles}
+                    valueFirstNameEmp={valueFirstNameEmp} 
+                    valueLastNameEmp={valueLasttNameEmp}
+                    valueEmailEmp={valueEmailEmp}
+                     phoneNumber={phoneNumber} 
+                     selectedRoles={selectedRoles}
                     disableElevation={true}></ButtonAddNewEmp>
             </div>
 
@@ -593,7 +655,19 @@ export const EmployeesPage = observer(() => {
                                                 scope="row"
                                                 padding="none"
                                             >
-                                                {employee.name}
+                                                {employee.firstName}
+                                            </TableCell>
+                                            <TableCell align="right"
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                {employee.lastName}
+                                            </TableCell>
+                                            <TableCell align="right"
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                {employee.email}
+                                            </TableCell>
+                                            <TableCell align="right"
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                {employee.password}
                                             </TableCell>
                                             <TableCell align="right"
                                                 onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>

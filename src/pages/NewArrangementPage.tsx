@@ -112,7 +112,7 @@ export const NewArrangementPage = observer(() => {
               (employeeId) => employeeId === employee.id
             );
             return (
-              <ListItem key={employee.name} disablePadding>
+              <ListItem key={employee.fullName} disablePadding>
                 <ListItemButton
                   onClick={() =>
                     isActive
@@ -121,7 +121,7 @@ export const NewArrangementPage = observer(() => {
                   }
                 >
                   <Checkbox checked={isActive} />
-                  <ListItemText id={labelId} primary={`${employee.name}`} />
+                  <ListItemText id={labelId} primary={`${employee.fullName}`} />
                 </ListItemButton>
               </ListItem>
             );

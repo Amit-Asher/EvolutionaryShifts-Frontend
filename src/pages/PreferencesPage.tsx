@@ -45,15 +45,15 @@ export const PreferencesPage = observer(() => {
             <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                value={selectedEmployee?.name ?? ''}
+                value={selectedEmployee?.fullName ?? ''}
                 label="Age"
                 onChange={(e) => {
-                    const newSelectedEmployee = allEmployees.find(employee => employee.name === e.target.value);
+                    const newSelectedEmployee = allEmployees.find(employee => employee.fullName === e.target.value);
                     setSelectedEmployee(newSelectedEmployee);
                 }}
             >
                 {allEmployees.map((employee: EmployeeDTO) => {
-                    return <MenuItem value={employee?.name || ''}>{employee.name}</MenuItem>;
+                    return <MenuItem value={employee?.fullName || ''}>{employee.fullName}</MenuItem>;
                 })}
             </Select>
 
