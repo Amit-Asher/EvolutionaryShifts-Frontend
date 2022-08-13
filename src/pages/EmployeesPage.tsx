@@ -19,6 +19,7 @@ import Checkbox from '@mui/material/Checkbox';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
+import axios, { AxiosRequestConfig } from 'axios';
 import {
     useAutocomplete,
     AutocompleteGetTagProps,
@@ -86,9 +87,9 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
 
 
         //the id is the name just for now
-        var EmpToAdd: EmployeeDTO = {name:employee.name,phoneNumber:employee.phoneNumber,roles:employee.roles, id:employee.name};
+        var EmpToAdd: EmployeeDTO = { name: employee.name, phoneNumber: employee.phoneNumber, roles: employee.roles, id: employee.name };
 
-        
+
         var tempemps = employees;
         tempemps.unshift(EmpToAdd);//PROBLEM: ADD EMP WITHOUT ID!!!
         setEmployees([...tempemps]);
@@ -127,7 +128,7 @@ const getRoles = async (): Promise<string[]> => {
 
 
 
-const deleteRoleForEmp = async (employee:EmployeeDTO,role: string) : Promise<void> => {
+const deleteRoleForEmp = async (employee: EmployeeDTO, role: string): Promise<void> => {
     console.log(employee.name + "role: " + role);
 
 
@@ -190,9 +191,9 @@ function getComparator<Key extends keyof any>(
     order: Order,
     orderBy: Key,
 ): (
-        a: { [key in Key]: string },
-        b: { [key in Key]: string },
-    ) => number {
+    a: { [key in Key]: string },
+    b: { [key in Key]: string },
+) => number {
     return order === 'desc'
         ? (a, b) => descendingComparator(a, b, orderBy)
         : (a, b) => -descendingComparator(a, b, orderBy);
@@ -298,20 +299,20 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 
-const  deleteSelectedEmp = async (selectedEmpToRemove: readonly string[], employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>) :Promise<void> => {
+const deleteSelectedEmp = async (selectedEmpToRemove: readonly string[], employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>): Promise<void> => {
     for (let i = 0; i < selectedEmpToRemove.length; i++) {
-    try{
-        //DELETE REQURST
-        const res = await (new EmployeeApi()).removeEmployee(selectedEmpToRemove[i]);
-        setEmployees(employees.filter(emp => emp.id !== selectedEmpToRemove[i]))
-        console.log("Sucsses to remove employee: " + selectedEmpToRemove[i]);
-    } catch (err) {
-        console.log("failed to remove employee: " + selectedEmpToRemove[i]);
+        try {
+            //DELETE REQURST
+            const res = await (new EmployeeApi()).removeEmployee(selectedEmpToRemove[i]);
+            setEmployees(employees.filter(emp => emp.id !== selectedEmpToRemove[i]))
+            console.log("Sucsses to remove employee: " + selectedEmpToRemove[i]);
+        } catch (err) {
+            console.log("failed to remove employee: " + selectedEmpToRemove[i]);
+        }
     }
 }
-}
 
-interface ButtonAddNewEmpProps{
+interface ButtonAddNewEmpProps {
     employees: EmployeeDTO[];
     setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>;
     id: string;
@@ -321,36 +322,35 @@ interface ButtonAddNewEmpProps{
     valueNameEmp: string;
 }
 
-const  onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>,
-    valueNameEmp: string, phoneNumber: string, selectedRoles: string[]) :void => {
-    var newEmp:NewEmployeeDTO = {name:valueNameEmp,phoneNumber:phoneNumber,roles:selectedRoles};
+const onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>,
+    valueNameEmp: string, phoneNumber: string, selectedRoles: string[]): void => {
+    var newEmp: NewEmployeeDTO = { name: valueNameEmp, phoneNumber: phoneNumber, roles: selectedRoles };
 
-        if(valueNameEmp.length === 0 || !valueNameEmp.match(/[a-z]/i))
-        {
-            console.log("Employee name is not valid");
-        }
-        else if(phoneNumber.length === 0){
-            console.log("Employee phone is empty");
-        }
-        else if(selectedRoles.length === 0){
-            console.log("Employee roles is empty");
-        }
-        else{
-            sendNewEmployee(newEmp, employees, setEmployees);
-        }
+    if (valueNameEmp.length === 0 || !valueNameEmp.match(/[a-z]/i)) {
+        console.log("Employee name is not valid");
+    }
+    else if (phoneNumber.length === 0) {
+        console.log("Employee phone is empty");
+    }
+    else if (selectedRoles.length === 0) {
+        console.log("Employee roles is empty");
+    }
+    else {
+        sendNewEmployee(newEmp, employees, setEmployees);
+    }
 }
 
-const ButtonAddNewEmp = (props:ButtonAddNewEmpProps) =>{
-    const { employees, setEmployees, id, disableElevation, selectedRoles, phoneNumber, valueNameEmp} = props;
-    
+const ButtonAddNewEmp = (props: ButtonAddNewEmpProps) => {
+    const { employees, setEmployees, id, disableElevation, selectedRoles, phoneNumber, valueNameEmp } = props;
+
     return (
-        <Button id={id} variant="contained" disableElevation={disableElevation} style={{marginTop:"20px", marginRight:"10px"}} onClick={(event) => {
+        <Button id={id} variant="contained" disableElevation={disableElevation} style={{ marginTop: "20px", marginRight: "10px" }} onClick={(event) => {
             onclickAddEmp(employees, setEmployees,
                 valueNameEmp, phoneNumber, selectedRoles);
         }}
         >Add Employee</Button>
     );
-}       
+}
 
 
 interface EnhancedTableToolbarProps {
@@ -395,8 +395,8 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             )}
             {numSelected > 0 ? (
                 <Tooltip title="Delete">
-                    <IconButton onClick={(event) => { 
-                            deleteSelectedEmp(selectedEmpToRemove, employees, setEmployees);
+                    <IconButton onClick={(event) => {
+                        deleteSelectedEmp(selectedEmpToRemove, employees, setEmployees);
                     }}>
                         <DeleteIcon />
                     </IconButton>
@@ -475,7 +475,7 @@ export const EmployeesPage = observer(() => {
     };
 
     const handleChangePage = (event: unknown, newPage: number) => {
-        setPage(newPage); 
+        setPage(newPage);
     };
 
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -496,7 +496,7 @@ export const EmployeesPage = observer(() => {
 
 
 
-  
+
 
 
     //the type of the event is wrong
@@ -504,25 +504,53 @@ export const EmployeesPage = observer(() => {
         setValuePhoneEmp(newPhone as string);
     };
 
-    
+
 
     const handleChangeEmpName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
         const name: string = e.target.value.toString();
-        if(name[name.length - 1] < '0' || name[name.length - 1] > '9' || name.length === 0)
+        if (name[name.length - 1] < '0' || name[name.length - 1] > '9' || name.length === 0)
             setValueNameEmp(e.target.value);
     };
 
-   /// console.log(`selected roles: ${JSON.stringify(selectedRoles, undefined, 2)}`)
+    /// console.log(`selected roles: ${JSON.stringify(selectedRoles, undefined, 2)}`)
+
+
+    const testAuth = async () => {
+        var raw = JSON.stringify({
+            "username": "amit",
+            "password": "1234"
+        });
+    
+        var requestOptions: any = {
+            method: 'POST',
+            credentials: 'include', // that was the important line
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: raw
+        };
+    
+        fetch("http://localhost:8080/api/doSignup", requestOptions)
+            .then(response => response.text())
+            .then(result => console.log(result))
+            .catch(error => console.log('error', error));
+        
+    }
 
     return (<>
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
 
-            < div style={{ display: 'flex'}}>
-                <TextField id="nameEmpTextField" label="Name" variant="outlined" value={valueNameEmp} onChange={handleChangeEmpName} style={{ marginRight: "20px", marginTop:"20px", marginLeft:"10px" }} />
-                <PhoneInput id="phoneEmpTextField" defaultCountry="IL" placeholder="Enter phone number" value={phoneNumber}
-                    onChange={handleChangePhoneName} style={{ marginRight: "20px", marginTop:"20px" }} />
+            <Button onClick={() => testAuth()}>
+                Set cookie
+            </Button>
 
-                <div style={{ display: "inline-block", marginRight: "20px", marginTop:"20px" }}>
+
+            < div style={{ display: 'flex' }}>
+                <TextField id="nameEmpTextField" label="Name" variant="outlined" value={valueNameEmp} onChange={handleChangeEmpName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
+                <PhoneInput id="phoneEmpTextField" defaultCountry="IL" placeholder="Enter phone number" value={phoneNumber}
+                    onChange={handleChangePhoneName} style={{ marginRight: "20px", marginTop: "20px" }} />
+
+                <div style={{ display: "inline-block", marginRight: "20px", marginTop: "20px" }}>
                     <Label>Enter Roles</Label>
                     <div>
                         <AsyncSelect
@@ -542,8 +570,8 @@ export const EmployeesPage = observer(() => {
                     </div>
                 </div>
                 <ButtonAddNewEmp employees={employees} setEmployees={setEmployees} id={"addEmpButton"}
-                valueNameEmp={valueNameEmp} phoneNumber={phoneNumber} selectedRoles={selectedRoles}
-                disableElevation ={true}></ButtonAddNewEmp>
+                    valueNameEmp={valueNameEmp} phoneNumber={phoneNumber} selectedRoles={selectedRoles}
+                    disableElevation={true}></ButtonAddNewEmp>
             </div>
 
             <EnhancedTableToolbar selectedEmpToRemove={selectedEmpToRemove} employees={employees} setEmployees={setEmployees} numSelected={selectedEmpToRemove.length} />
@@ -578,14 +606,14 @@ export const EmployeesPage = observer(() => {
                                             selected={isItemSelected}>
 
                                             <TableCell
-                                            padding="checkbox" 
-                                            onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                padding="checkbox"
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
                                                 <Checkbox
                                                     color="primary"
                                                     checked={isItemSelected}
                                                     inputProps={{
                                                         'aria-labelledby': labelId,
-                                                    }}/>
+                                                    }} />
                                             </TableCell>
                                             <TableCell
                                                 onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}
@@ -597,7 +625,7 @@ export const EmployeesPage = observer(() => {
                                                 {employee.name}
                                             </TableCell>
                                             <TableCell align="right"
-                                             onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
                                                 {employee.phoneNumber}
                                             </TableCell>
                                             <TableCell align="right">

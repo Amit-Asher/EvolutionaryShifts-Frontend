@@ -1,6 +1,11 @@
 import { FormLabel } from "@mui/material";
 
 export enum PagesUrl {
+
+    // *******  Welcome pages ******* //
+    Login = '/login',
+    Signup = '/signup',
+
     // *******  Manager pages ******* //
     Arrangement = '/arrangement',
     Arrangement_New= '/arrangement/new',

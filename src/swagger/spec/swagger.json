@@ -33,6 +33,10 @@
         "description": "Load Db Controller"
       },
       {
+        "name": "login",
+        "description": "Login Controller"
+      },
+      {
         "name": "main",
         "description": "Main Controller"
       },
@@ -474,6 +478,183 @@
               "required": true,
               "schema": {
                 "$ref": "#/definitions/PropertiesDTO"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/GenericResponseDTO"
+              }
+            },
+            "201": {
+              "description": "Created"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "Forbidden"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "deprecated": false
+        }
+      },
+      "/api/doLogin": {
+        "post": {
+          "tags": [
+            "login"
+          ],
+          "summary": "doLogin",
+          "operationId": "doLogin",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "*/*"
+          ],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "credentialsDTO",
+              "description": "credentialsDTO",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/CredentialsDTO"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/GenericResponseDTO"
+              }
+            },
+            "201": {
+              "description": "Created"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "Forbidden"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "deprecated": false
+        }
+      },
+      "/api/doLogout": {
+        "post": {
+          "tags": [
+            "login"
+          ],
+          "summary": "doLogout",
+          "operationId": "doLogout",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "*/*"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/GenericResponseDTO"
+              }
+            },
+            "201": {
+              "description": "Created"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "Forbidden"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "deprecated": false
+        }
+      },
+      "/api/doSignout": {
+        "post": {
+          "tags": [
+            "login"
+          ],
+          "summary": "doSignout",
+          "operationId": "doSignout",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "*/*"
+          ],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "credentialsDTO",
+              "description": "credentialsDTO",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/CredentialsDTO"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/GenericResponseDTO"
+              }
+            },
+            "201": {
+              "description": "Created"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "Forbidden"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "deprecated": false
+        }
+      },
+      "/api/doSignup": {
+        "post": {
+          "tags": [
+            "login"
+          ],
+          "summary": "doSignup",
+          "operationId": "doSignup",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "*/*"
+          ],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "credentialsDTO",
+              "description": "credentialsDTO",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/CredentialsDTO"
               }
             }
           ],
@@ -1243,6 +1424,18 @@
           }
         },
         "title": "CompanyDTO"
+      },
+      "CredentialsDTO": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "title": "CredentialsDTO"
       },
       "DbDTO": {
         "type": "object",

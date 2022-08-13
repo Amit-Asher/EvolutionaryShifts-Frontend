@@ -10,9 +10,10 @@ import { EvolutionPage } from "./pages/EvolutionPage";
 import { PreferencesPage } from "./pages/PreferencesPage";
 import { StatusPage } from "./pages/StatusPage";
 import { PublishPage } from "./pages/PublishPage";
-import { Navigator } from "./components/Navigator/Navigator";
 import { arrangementPageSubTabs, PagesUrl } from "./interfaces/pages.meta";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
+import { SignupPage } from "./pages/SignupPage";
+import { LoginPage } from "./pages/LoginPage";
 
 export default function Portal() {
     return (
@@ -20,15 +21,34 @@ export default function Portal() {
             <Box sx={{ display: "flex", minHeight: "100vh" }}>
                 <CssBaseline />
                 {/* ********************** NAV BAR **********************  */}
-                <Navigator />
 
                 {/* ******************* PAGES ROUTING *******************  */}
                 <Routes>
                     <Route
                         path="/*"
-                        element={<Navigate to={PagesUrl.Arrangement_New} />}
+                        element={<Navigate to={PagesUrl.Login} />}
                     />
+
+                    {/* ********* WELCOME PAGES ********* */}
+                    <Route
+                        path={PagesUrl.Login}
+                        element={<LoginPage />}
+                    />
+                    <Route
+                        path={PagesUrl.Signup}
+                        element={<SignupPage />}
+                    />
+
                     {/* ***** ARRANGEMENT SUB TABS ****** */}
+                    <Route
+                        path={PagesUrl.Arrangement}
+                        element={
+                            <PageFrame
+                                pageComponent={NewArrangementPage}
+                                subtabs={arrangementPageSubTabs}
+                            />
+                        }
+                    />
                     <Route
                         path={PagesUrl.Arrangement_New}
                         element={
