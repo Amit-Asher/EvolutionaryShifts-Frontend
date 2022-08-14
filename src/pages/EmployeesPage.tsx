@@ -88,8 +88,6 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
             roles: employee.roles
         });
 
-
-        //the id is the name just for now
         var EmpToAdd: EmployeeDTO = { 
             firstName: employee.firstName, 
             lastName: employee.lastName, 
@@ -97,11 +95,11 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
             password: employee.password, 
             phoneNumber: employee.phoneNumber,
             roles: employee.roles,
-            id: employee.firstName };
-
+            id: (res.message ||"*error*").split("The new id is: ", 2)[1]
+         };
 
         var tempemps = employees;
-        tempemps.unshift(EmpToAdd);//PROBLEM: ADD EMP WITHOUT ID!!!
+        tempemps.unshift(EmpToAdd);
         setEmployees([...tempemps]);
         console.log("Sucsses to set employee");
     } catch (err) {
@@ -114,7 +112,8 @@ const getEmployees = async (): Promise<EmployeeDTO[]> => {
         // GET REQUEST
         const res: EmployeesDTO = await (new EmployeeApi()).getAllEmployees();
         const employees: EmployeeDTO[] = res.employees ?? [];
-        console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
+        //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
+        console.log('Success to get employees');
         return employees;
     } catch (err) {
         console.log('failed to get employees');
@@ -128,6 +127,7 @@ const getRoles = async (): Promise<string[]> => {
     try {
         // GET REQUEST
         const res: RolesDTO = await (new RoleApi()).getAllRoles();
+        console.log('Success to get roles');
         return res?.names ?? [];
     } catch (err) {
         console.log('failed to get roles');
@@ -136,33 +136,52 @@ const getRoles = async (): Promise<string[]> => {
 }
 
 
+const deleteRoleForEmp = async (employee: EmployeeDTO, role: string, employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>): Promise<void> => {
+    try{
+         //DELETE REQURST
+         const res = await (new RoleApi()).removeRoleFromEmp(employee.id || "**error**", role);
 
+         var emplyeesAfterChange:EmployeeDTO[] = employees;
+         emplyeesAfterChange.map(emp => {
+            if(emp.id === employee.id)
+            {
+                emp.roles = emp.roles?.filter(role_i => role_i !== role);
+            }
+         });
 
-const deleteRoleForEmp = async (employee: EmployeeDTO, role: string): Promise<void> => {
-    console.log(employee.firstName + " " + employee.lastName + "role: " + role);
+         setEmployees([...emplyeesAfterChange]);
+         console.log(`Sucsses to remove role: '${role}' from employee id: '${employee.id}'`);
+         //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
 
-
-    //need to dominant this buuton to when a press on it it wiil not press the whole row or just to call setSelected() with specific row
-    //need to POST requst to the server to delete this role from the specific employee
-    //need to re-rander the table og employees
+    }catch (err) {
+        console.log(`Failed to remove role: ${role} from employee: ${employee.id}`);
+        }
 }
 
 interface RolesListForEmpProps {
     employee: EmployeeDTO;
+    employees: EmployeeDTO[];
+    setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>;
 }
 
 function RolesListForEmp(props: RolesListForEmpProps) {
     const [dense, setDense] = React.useState(false);
     const [secondary, setSecondary] = React.useState(false);
+    const { employee, employees, setEmployees} = props;
+
     var lines = [];
 
-    for (let i = 0; i < (props?.employee?.roles || []).length; i++) {
+    for (let i = 0; i < (employee.roles || []).length; i++) {
         lines.push(
             <ListItem
                 key={i}
                 secondaryAction={
                     <IconButton edge="end" aria-label="delete" onClick={(event) => {
-                        deleteRoleForEmp(props.employee, (props?.employee?.roles || [])[i]);
+                        const rolesSize:number = employee.roles?.length || 0;  
+                        if(rolesSize >= 2)
+                            deleteRoleForEmp(employee, (employee.roles || [])[i], employees, setEmployees);
+                        else
+                           console.log(`Can not remoove role: ${(employee.roles || [])[i]} from employee: ${employee} when the size of the roles is less than 1`);
                     }}>
                         <DeleteIcon />
                     </IconButton>
@@ -332,7 +351,7 @@ const deleteSelectedEmp = async (selectedEmpToRemove: readonly string[], employe
         try {
             //DELETE REQURST
             const res = await (new EmployeeApi()).removeEmployee(selectedEmpToRemove[i]);
-            setEmployees(employees.filter(emp => emp.id !== selectedEmpToRemove[i]))
+            setEmployees(employees.filter(emp => emp.id !== selectedEmpToRemove[i]));
             console.log("Sucsses to remove employee: " + selectedEmpToRemove[i]);
         } catch (err) {
             console.log("failed to remove employee: " + selectedEmpToRemove[i]);
@@ -358,9 +377,9 @@ const onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<Re
     valueFirstNameEmp: string, valueLastNameEmp: string,valueEmailEmp:string, phoneNumber: string, selectedRoles: string[]): void => {
     var newEmp: NewEmployeeDTO = { 
         firstName: valueFirstNameEmp,
-        lastName: valueFirstNameEmp,
-        email: valueFirstNameEmp,
-        password: "password-ui",
+        lastName: valueLastNameEmp,
+        email: valueEmailEmp,
+        password: "password-ui",///!!!
         phoneNumber: phoneNumber,
         roles: selectedRoles };
 
@@ -562,7 +581,7 @@ export const EmployeesPage = observer(() => {
     };
 
     const handleChangeEmpEmail = (e: { target: { value: React.SetStateAction<string>; }; }) => {
-        setValueLasttNameEmp(e.target.value);
+        setValueEmailEmp(e.target.value);
     };
 
     /// console.log(`selected roles: ${JSON.stringify(selectedRoles, undefined, 2)}`)
@@ -674,7 +693,7 @@ export const EmployeesPage = observer(() => {
                                                 {employee.phoneNumber}
                                             </TableCell>
                                             <TableCell align="right">
-                                                <RolesListForEmp employee={employee} />
+                                                <RolesListForEmp employee={employee} employees={employees} setEmployees={setEmployees}/>
                                             </TableCell>
                                         </TableRow>
                                     );
