@@ -36,7 +36,7 @@ import PhoneInput from 'react-phone-number-input'
 import { E164Number } from 'libphonenumber-js';
 import { Paper } from '@mui/material';
 import { observer } from 'mobx-react';
-import { EmployeeApi, EmployeeDTO, EmployeesDTO, NewEmployeeDTO, RoleApi, RoleDTO, RolesDTO } from '../swagger/stubs';
+import { EmployeeApi, EmployeeDTO, EmployeesDTO, GenericResponseDTO, NewEmployeeDTO, RoleApi, RoleDTO, AddRemoveRoleDTO, RolesDTO } from '../swagger/stubs';
 import AsyncSelect from 'react-select/async';
 import cssVars from '@mui/system/cssVars';
 import { FormControlUnstyledContext } from '@mui/base';
@@ -83,7 +83,6 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
             firstName: employee.firstName,
             lastName: employee.lastName,
             email: employee.email,
-            password: employee.password,
             phoneNumber: employee.phoneNumber,
             roles: employee.roles
         });
@@ -92,16 +91,16 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
             firstName: employee.firstName, 
             lastName: employee.lastName, 
             email: employee.email, 
-            password: employee.password, 
             phoneNumber: employee.phoneNumber,
             roles: employee.roles,
-            id: (res.message ||"*error*").split("The new id is: ", 2)[1]
+            id: res.employeeId
          };
 
         var tempemps = employees;
         tempemps.unshift(EmpToAdd);
         setEmployees([...tempemps]);
-        console.log("Sucsses to set employee");
+        console.log(res.message);
+        console.log("The password for the employee is: " + res.tmpPassword);
     } catch (err) {
         console.log('failed to set employee');
     }
@@ -136,11 +135,25 @@ const getRoles = async (): Promise<string[]> => {
 }
 
 
+
+/** const res = await (new EmployeeApi()).addEmployee({
+            firstName: employee.firstName,
+            lastName: employee.lastName,
+            email: employee.email,
+            phoneNumber: employee.phoneNumber,
+            roles: employee.roles
+        });
+ */
+
+
 const deleteRoleForEmp = async (employee: EmployeeDTO, role: string, employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>): Promise<void> => {
     try{
          //DELETE REQURST
-         const res = await (new RoleApi()).removeRoleFromEmp(employee.id || "**error**", role);
-
+         const res: GenericResponseDTO = await (new RoleApi()).removeRoleFromEmp({
+            roleName: role,
+            employeeID: employee.id
+         },{ credentials: 'include' });///!!!!!!!!!!! no working
+      
          var emplyeesAfterChange:EmployeeDTO[] = employees;
          emplyeesAfterChange.map(emp => {
             if(emp.id === employee.id)
@@ -150,11 +163,11 @@ const deleteRoleForEmp = async (employee: EmployeeDTO, role: string, employees: 
          });
 
          setEmployees([...emplyeesAfterChange]);
-         console.log(`Sucsses to remove role: '${role}' from employee id: '${employee.id}'`);
+         console.log(res.message);
          //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
 
     }catch (err) {
-        console.log(`Failed to remove role: ${role} from employee: ${employee.id}`);
+        console.log(`Failed to remove role: '${role}' from employee: '${employee.fullName}'`);
         }
 }
 
@@ -173,7 +186,7 @@ function RolesListForEmp(props: RolesListForEmpProps) {
 
     for (let i = 0; i < (employee.roles || []).length; i++) {
         lines.push(
-            <ListItem
+            <ListItem style={{ padding: '0px' }}
                 key={i}
                 secondaryAction={
                     <IconButton edge="end" aria-label="delete" onClick={(event) => {
@@ -268,22 +281,16 @@ const headCells: readonly HeadCell[] = [
         disablePadding: true,
         label: ' Email',
     },
-    {
-        id: 'password',
-        numeric: false,
-        disablePadding: true,
-        label: 'password',
-    },
-    {
+    {   
         id: 'phoneNumber',
         numeric: false,
-        disablePadding: false,
+        disablePadding: true,
         label: 'Phone number',
     },
     {
         id: 'roles',
         numeric: false,
-        disablePadding: false,
+        disablePadding: true,
         label: 'Roles',
     }
 ];
@@ -369,8 +376,6 @@ interface ButtonAddNewEmpProps {
     valueFirstNameEmp: string;
     valueLastNameEmp: string;
     valueEmailEmp: string;
-    //valuePasswordEmp: string;
-
 }
 
 const onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>,
@@ -379,7 +384,6 @@ const onclickAddEmp = (employees: EmployeeDTO[], setEmployees: React.Dispatch<Re
         firstName: valueFirstNameEmp,
         lastName: valueLastNameEmp,
         email: valueEmailEmp,
-        password: "password-ui",///!!!
         phoneNumber: phoneNumber,
         roles: selectedRoles };
 
@@ -588,7 +592,7 @@ export const EmployeesPage = observer(() => {
 
     return (<>
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
-            < div style={{ display: 'flex' }}>
+            <div style={{ display: 'flex' }}>
                 <TextField id="firstNameEmpTextField" label="First Name" variant="outlined" value={valueFirstNameEmp}
                  onChange={handleChangeEmpFirstName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
                 <TextField id="LastNameEmpTextField" label="Last Name" variant="outlined" value={valueLasttNameEmp}
@@ -676,23 +680,22 @@ export const EmployeesPage = observer(() => {
                                             >
                                                 {employee.firstName}
                                             </TableCell>
-                                            <TableCell align="right"
+                                            <TableCell
+                                            padding="none"
                                                 onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
                                                 {employee.lastName}
                                             </TableCell>
-                                            <TableCell align="right"
+                                            <TableCell
+                                            padding="none"
                                                 onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
                                                 {employee.email}
                                             </TableCell>
-                                            <TableCell align="right"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                {employee.password}
-                                            </TableCell>
-                                            <TableCell align="right"
+                                            <TableCell
+                                            padding="none"
                                                 onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
                                                 {employee.phoneNumber}
                                             </TableCell>
-                                            <TableCell align="right">
+                                            <TableCell padding="none" >
                                                 <RolesListForEmp employee={employee} employees={employees} setEmployees={setEmployees}/>
                                             </TableCell>
                                         </TableRow>
