@@ -85,7 +85,8 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
             email: employee.email,
             phoneNumber: employee.phoneNumber,
             roles: employee.roles
-        });
+        },
+        { credentials: 'include' });
 
         var EmpToAdd: EmployeeDTO = { 
             firstName: employee.firstName, 
@@ -109,7 +110,7 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
 const getEmployees = async (): Promise<EmployeeDTO[]> => {
     try {
         // GET REQUEST
-        const res: EmployeesDTO = await (new EmployeeApi()).getAllEmployees();
+        const res: EmployeesDTO = await (new EmployeeApi()).getAllEmployees({ credentials: 'include' });
         const employees: EmployeeDTO[] = res.employees ?? [];
         //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
         console.log('Success to get employees');
@@ -125,8 +126,7 @@ const getEmployees = async (): Promise<EmployeeDTO[]> => {
 const getRoles = async (): Promise<string[]> => {
     try {
         // GET REQUEST
-        const res: RolesDTO = await (new RoleApi()).getAllRoles();
-        console.log('Success to get roles');
+        const res: RolesDTO = await (new RoleApi()).getAllRoles({ credentials: 'include' });
         return res?.names ?? [];
     } catch (err) {
         console.log('failed to get roles');
@@ -136,31 +136,9 @@ const getRoles = async (): Promise<string[]> => {
 
 
 
-/** const res = await (new EmployeeApi()).addEmployee({
-            firstName: employee.firstName,
-            lastName: employee.lastName,
-            email: employee.email,
-            phoneNumber: employee.phoneNumber,
-            roles: employee.roles
-        });
- */
 
-
-const deleteRoleForEmp = async (employee: EmployeeDTO, role: string, employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>): Promise<void> => {
-    try{
-         //DELETE REQURST
-         const res: GenericResponseDTO = await (new RoleApi()).removeRoleFromEmp({
-            roleName: role,
-            employeeID: employee.id
-         },{ credentials: 'include' });///!!!!!!!!!!! no working
-      
-         var emplyeesAfterChange:EmployeeDTO[] = employees;
-         emplyeesAfterChange.map(emp => {
-            if(emp.id === employee.id)
-            {
-                emp.roles = emp.roles?.filter(role_i => role_i !== role);
-            }
-         });
+const deleteRoleForEmp = async (employee: EmployeeDTO, role: string): Promise<void> => {
+    console.log(employee.name + "role: " + role);
 
          setEmployees([...emplyeesAfterChange]);
          console.log(res.message);
@@ -357,8 +335,8 @@ const deleteSelectedEmp = async (selectedEmpToRemove: readonly string[], employe
     for (let i = 0; i < selectedEmpToRemove.length; i++) {
         try {
             //DELETE REQURST
-            const res = await (new EmployeeApi()).removeEmployee(selectedEmpToRemove[i]);
-            setEmployees(employees.filter(emp => emp.id !== selectedEmpToRemove[i]));
+            const res = await (new EmployeeApi()).removeEmployee(selectedEmpToRemove[i], { credentials: 'include' });
+            setEmployees(employees.filter(emp => emp.id !== selectedEmpToRemove[i]))
             console.log("Sucsses to remove employee: " + selectedEmpToRemove[i]);
         } catch (err) {
             console.log("failed to remove employee: " + selectedEmpToRemove[i]);
