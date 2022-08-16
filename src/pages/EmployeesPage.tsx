@@ -83,7 +83,8 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
             name: employee.name,
             phoneNumber: employee.phoneNumber,
             roles: employee.roles
-        });
+        },
+        { credentials: 'include' });
 
 
         //the id is the name just for now
@@ -102,7 +103,7 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
 const getEmployees = async (): Promise<EmployeeDTO[]> => {
     try {
         // GET REQUEST
-        const res: EmployeesDTO = await (new EmployeeApi()).getAllEmployees();
+        const res: EmployeesDTO = await (new EmployeeApi()).getAllEmployees({ credentials: 'include' });
         const employees: EmployeeDTO[] = res.employees ?? [];
         //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
         return employees;
@@ -117,7 +118,7 @@ const getEmployees = async (): Promise<EmployeeDTO[]> => {
 const getRoles = async (): Promise<string[]> => {
     try {
         // GET REQUEST
-        const res: RolesDTO = await (new RoleApi()).getAllRoles();
+        const res: RolesDTO = await (new RoleApi()).getAllRoles({ credentials: 'include' });
         return res?.names ?? [];
     } catch (err) {
         console.log('failed to get roles');
@@ -303,7 +304,7 @@ const deleteSelectedEmp = async (selectedEmpToRemove: readonly string[], employe
     for (let i = 0; i < selectedEmpToRemove.length; i++) {
         try {
             //DELETE REQURST
-            const res = await (new EmployeeApi()).removeEmployee(selectedEmpToRemove[i]);
+            const res = await (new EmployeeApi()).removeEmployee(selectedEmpToRemove[i], { credentials: 'include' });
             setEmployees(employees.filter(emp => emp.id !== selectedEmpToRemove[i]))
             console.log("Sucsses to remove employee: " + selectedEmpToRemove[i]);
         } catch (err) {

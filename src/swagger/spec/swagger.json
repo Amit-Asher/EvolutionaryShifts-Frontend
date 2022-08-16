@@ -681,6 +681,42 @@
           "deprecated": false
         }
       },
+      "/api/doSilentLogin": {
+        "post": {
+          "tags": [
+            "login"
+          ],
+          "summary": "doSilentLogin",
+          "operationId": "doSilentLogin",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "*/*"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/GenericResponseDTO"
+              }
+            },
+            "201": {
+              "description": "Created"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "Forbidden"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "deprecated": false
+        }
+      },
       "/api/finishArrangement": {
         "post": {
           "tags": [
@@ -916,6 +952,42 @@
               "schema": {
                 "$ref": "#/definitions/EvolutionStatusDTO"
               }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "Forbidden"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "deprecated": false
+        }
+      },
+      "/api/keepAlive": {
+        "post": {
+          "tags": [
+            "login"
+          ],
+          "summary": "keepAlive",
+          "operationId": "keepAlive",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "*/*"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/GenericResponseDTO"
+              }
+            },
+            "201": {
+              "description": "Created"
             },
             "401": {
               "description": "Unauthorized"

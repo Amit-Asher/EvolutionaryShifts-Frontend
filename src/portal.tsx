@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import { NewArrangementPage } from "./pages/NewArrangementPage";
 import theme from "./themes/mainTheme";
 import { PageFrame } from "./components/PageFrame/PageFrame";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
 import { EmployeesPage } from "./pages/EmployeesPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
 import { PreferencesPage } from "./pages/PreferencesPage";
@@ -15,8 +15,40 @@ import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { SignupPage } from "./pages/SignupPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { useEffect, useState } from "react";
+import { ComponentStatus } from "./interfaces/common";
+import { loginService } from "./services/loginService";
+import { LoadingPaper } from "./components/Loading/LoadingPaper";
 
 export default function Portal() {
+    const navigate = useNavigate();
+    const [status, setStatus] = useState<ComponentStatus>(
+        ComponentStatus.LOADING
+    );
+
+    useEffect(() => {
+        const tryLogin = async () => {
+            try {
+                await loginService.doSlientLogin();
+                navigate(PagesUrl.Arrangement);
+            } catch (err) {
+                navigate(PagesUrl.Login);
+            } finally {
+                setStatus(ComponentStatus.READY);
+            }
+
+        };
+        tryLogin();
+    }, []);
+
+    if (status !== ComponentStatus.READY) {
+        return (
+            <Box sx={{ display: "flex", minHeight: "100vh" }}>
+                <LoadingPaper />;
+            </Box>
+        )
+    }
+
     return (
         <ThemeProvider theme={theme}>
             <Box sx={{ display: "flex", minHeight: "100vh" }}>

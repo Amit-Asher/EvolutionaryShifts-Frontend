@@ -12,7 +12,7 @@ class CompanyService {
     public async getEmployees(): Promise<EmployeeDTO[]> {
         try {
             if (this.employeesCache.length === 0) {
-                const res = await (new EmployeeApi()).getAllEmployees();
+                const res = await (new EmployeeApi()).getAllEmployees({ credentials: 'include' });
                 if (!res) {
                     globalStore.notificationStore.show({ message: 'Failed to fetch employees' });
                     return [];
@@ -31,7 +31,7 @@ class CompanyService {
     public async getRoles(): Promise<string[]> {
         try {
             if (this.rolesCache.length === 0) {
-                const res = await (new RoleApi()).getAllRoles();
+                const res = await (new RoleApi()).getAllRoles({ credentials: 'include' });
                 if (!res) {
                     globalStore.notificationStore.show({ message: 'Failed to fetch employees roles' });
                     return [];

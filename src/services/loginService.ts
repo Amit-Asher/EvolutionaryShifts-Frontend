@@ -4,7 +4,6 @@ export namespace loginService {
 
     export async function doLogin(email: string, password: string): Promise<void> {
         try {
-            // todo: fix api- only email + password
             const res: any = await (new LoginApi()).doLogin({
                 username: email,
                 password
@@ -14,6 +13,7 @@ export namespace loginService {
             if (!res.success) {
                 throw new Error("Failed to login");
             }
+            keepAlive();
         } catch (err) {
             console.error('Failed to login');
             throw err;
@@ -51,6 +51,7 @@ export namespace loginService {
             if (!res.success) {
                 throw new Error("Failed to signup");
             }
+            keepAlive();
         } catch (err) {
             console.error('Failed to signup');
             throw err;
@@ -64,9 +65,30 @@ export namespace loginService {
             if (!res.success) {
                 throw new Error("Failed to signout");
             }
+            // stopKeepAlive();
         } catch (err) {
             console.error('Failed to signout');
             throw err;
         }
+    }
+
+    export async function doSlientLogin(): Promise<void> {
+        try {
+            const res: any = await (new LoginApi()).doSilentLogin({ credentials: 'include' });            
+            if (!res.success) {
+                throw new Error("Failed to login");
+            }
+            keepAlive();
+        } catch (err) {
+            console.error('Failed to login');
+            throw err;
+        }
+    }
+
+    export async function keepAlive(): Promise<void> {
+        setTimeout(async () => {
+            (new LoginApi).keepAlive({ credentials: 'include' });
+            keepAlive(); // loop forever. (note that this is not on stack)
+        }, 1000 * 60 * 3); // every 3 minutes (token invalidation occur on 5 minutes)
     }
 }

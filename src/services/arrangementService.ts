@@ -14,7 +14,7 @@ class ArrangementService {
     public async getRulesOptions(): Promise<SchemaFamilyDTO> {
         try {
             if (isPropertiesEmpty(this.propertiesCache)) {
-                const res: SchemaFamilyDTO = await (new ArrangementApi()).getRulesOptions();
+                const res: SchemaFamilyDTO = await (new ArrangementApi()).getRulesOptions({ credentials: 'include' });
                 if (!res) {
                     globalStore.notificationStore.show({ message: 'Failed to fetch rules options' });
                     return {};
@@ -33,7 +33,7 @@ class ArrangementService {
     public async sendProperties(properties: PropertiesDTO): Promise<void> {
         try {
             globalStore.notificationStore.show({ message: 'Creating new arrangement...' });
-            const res = await (new ArrangementApi()).createArrangement(properties);
+            const res = await (new ArrangementApi()).createArrangement(properties, { credentials: 'include' });
             if (!res.success) {
                 globalStore.notificationStore.show({ message: 'Failed to create new arrangement' });
                 return;
@@ -49,7 +49,7 @@ class ArrangementService {
     public async getPreferences(): Promise<EmpSlotsPreferenceDTO[]> {
         try {
             if (this.preferencesCache.length === 0) {
-                const res: SlotsPreferencesDTO = await (new ArrangementApi()).getPreferences();
+                const res: SlotsPreferencesDTO = await (new ArrangementApi()).getPreferences({ credentials: 'include' });
                 if (!res) {
                     globalStore.notificationStore.show({ message: 'Failed to fetch employees preferences' });
                     return [];
@@ -68,7 +68,7 @@ class ArrangementService {
     public async getProperties(): Promise<PropertiesDTO> {
         try {
             if (isPropertiesEmpty(this.propertiesCache)) {
-                const res: PropertiesDTO = await (new ArrangementApi()).getProperties();
+                const res: PropertiesDTO = await (new ArrangementApi()).getProperties({ credentials: 'include' });
                 if (!res) {
                     globalStore.notificationStore.show({ message: 'Failed to fetch arrangement properties' });
                     return emptyProperties;
@@ -87,7 +87,7 @@ class ArrangementService {
     public async sendPreference(employeePreferences: EmployeePreferencesDTO) {
         try {
             globalStore.notificationStore.show({ message: 'Sending employee preference...' });
-            const res = await (new ArrangementApi()).addPreferences(employeePreferences);
+            const res = await (new ArrangementApi()).addPreferences(employeePreferences, { credentials: 'include' });
             if (!res.success) {
                 globalStore.notificationStore.show({ message: 'Failed to send employee preference' });
                 return;
