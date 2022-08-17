@@ -36,7 +36,7 @@ import PhoneInput from 'react-phone-number-input'
 import { E164Number } from 'libphonenumber-js';
 import { Paper } from '@mui/material';
 import { observer } from 'mobx-react';
-import { EmployeeApi, EmployeeDTO, EmployeesDTO, GenericResponseDTO, NewEmployeeDTO, RoleApi, RoleDTO, AddRemoveRoleDTO, RolesDTO } from '../swagger/stubs';
+import { EmployeeApi, EmployeeDTO, EmployeesDTO, GenericResponseDTO, NewEmployeeDTO, RoleApi, RolesDTO, SettingsApi } from '../swagger/stubs';
 import AsyncSelect from 'react-select/async';
 import cssVars from '@mui/system/cssVars';
 import { FormControlUnstyledContext } from '@mui/base';
@@ -102,6 +102,7 @@ const sendNewEmployee = async (employee: NewEmployeeDTO, employees: EmployeeDTO[
         setEmployees([...tempemps]);
         console.log(res.message);
         console.log("The password for the employee is: " + res.tmpPassword);
+        //need to send somehome to the employee his new password
     } catch (err) {
         console.log('failed to set employee');
     }
@@ -136,16 +137,54 @@ const getRoles = async (): Promise<string[]> => {
 
 
 
+const generatePasswordToEmp = async (employee: string, employees: EmployeeDTO[], setValueGeneratePassword: React.Dispatch<React.SetStateAction<string>>): Promise<void> => {
+    try{
+        // POST REQUEST
+        var employeeId: string | undefined = "none";
+        employees.map(emp => {
+            if(emp.fullName === employee)
+                employeeId = emp.id;});
+        if(employeeId === "none")
+        {
+            console.log(`failed to generate password to employee. Emoployee name ${employee} not valid`)
+        }
+        else{
+            const res = await (new SettingsApi().generatePasswordForEmp(employeeId, { credentials: 'include' }));
+            setValueGeneratePassword("Password: " + res.newPassword);
+            console.log(res.message);
+            //need to send somehome to the employee his new password
+        }
+    }catch (err) {
+        console.log(`failed to generate password to employee ${employee}`);
+    }
+}
+
+const addRoleToEmp= async (employee: EmployeeDTO, role: string, employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>): Promise<void> => {
+    try{
+        // POST REQUEST
+        const res = await (new RoleApi()).addRoleToEmp(employee.id || "*error*", role, { credentials: 'include' });
+        var emplyeesAfterChange:EmployeeDTO[] = employees;
+         emplyeesAfterChange.map(emp => {
+            if(emp.id === employee.id)
+            {
+                emp.roles?.unshift(role);
+            }
+         });
+
+         setEmployees([...emplyeesAfterChange]);
+         console.log(res.message);
+        //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
+    }
+    catch (err) {
+        console.log(`Failed to add role: '${role}' to employee: '${employee.fullName}'`);
+        }
+}
 
 
 const deleteRoleForEmp = async (employee: EmployeeDTO, role: string, employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>): Promise<void> => {
     try{
          //DELETE REQURST
-         const res: GenericResponseDTO = await (new RoleApi()).removeRoleFromEmp({
-            roleName: role,
-            employeeID: employee.id
-         },{ credentials: 'include' });///!!!!!!!!!!! no working
-      
+         const res = await (new RoleApi()).removeRoleFromEmp(employee.id || "*error*", role, { credentials: 'include' });
          var emplyeesAfterChange:EmployeeDTO[] = employees;
          emplyeesAfterChange.map(emp => {
             if(emp.id === employee.id)
@@ -157,7 +196,6 @@ const deleteRoleForEmp = async (employee: EmployeeDTO, role: string, employees: 
          setEmployees([...emplyeesAfterChange]);
          console.log(res.message);
          //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
-
     }catch (err) {
         console.log(`Failed to remove role: '${role}' from employee: '${employee.fullName}'`);
         }
@@ -482,9 +520,10 @@ export const EmployeesPage = observer(() => {
     const [valueFirstNameEmp, setValueFirstNameEmp] = React.useState("");
     const [valueLasttNameEmp, setValueLasttNameEmp] = React.useState("");
     const [valueEmailEmp, setValueEmailEmp] = React.useState("");
+    const [valueAddRoleToEmp, setValueAddRoleToEmp] = React.useState("");
+    const [valueGeneratePassword, setValueGeneratePassword] = React.useState("");
 
-
-
+    
     const fetchEmployees = async () => {
         const employeesFromServer = await getEmployees();
         setEmployees(employeesFromServer);
@@ -580,11 +619,13 @@ export const EmployeesPage = observer(() => {
         setValueEmailEmp(e.target.value);
     };
 
-    /// console.log(`selected roles: ${JSON.stringify(selectedRoles, undefined, 2)}`)
+    const handleChangeAddRoleToEmp = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+        setValueAddRoleToEmp(e.target.value);
+    };
 
     return (<>
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
-            <div style={{ display: 'flex' }}>
+            <div style={{ display: 'flex', marginBottom: "10px" }}>
                 <TextField id="firstNameEmpTextField" label="First Name" variant="outlined" value={valueFirstNameEmp}
                  onChange={handleChangeEmpFirstName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
                 <TextField id="LastNameEmpTextField" label="Last Name" variant="outlined" value={valueLasttNameEmp}
@@ -717,6 +758,21 @@ export const EmployeesPage = observer(() => {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
             />
+
+            <div style={{ marginTop: "40px", marginLeft: "100px", marginBottom: "10px" }}>      
+            <Label>Generate new random password to employee</Label>
+            <div>
+                
+                <TextField id="addRoleToEmpTextField" label="Full Name" variant="outlined" value={valueAddRoleToEmp}
+                 onChange={handleChangeAddRoleToEmp} style={{ marginRight: "20px" }} />
+                 <Button style={{marginRight: "10px"}} id="addEmpButton" disableElevation={true} variant="contained" onClick={(event) => {
+                        generatePasswordToEmp(valueAddRoleToEmp, employees, setValueGeneratePassword);
+                     }}
+                >Generate</Button>
+                <Label style={{display: "inline"}}>{valueGeneratePassword}</Label>
+            </div>
+            </div>   
+
         </Paper>
     </>
     );
@@ -726,14 +782,4 @@ export const EmployeesPage = observer(() => {
 function employee(employee: any, i: number) {
     throw new Error('Function not implemented.');
 }
-/*
-ללחוץ על הכפתור ולהוסיף עובדים לטבלה עם בדיקת תקינות קלט
-אם מוחקים לי תפקיד מסויים אני צריך לעדכן במערכת עצמת ולמחוק מהטבלה
-לגרום לכפתורים של הזבל לעבוד ולמחוק באמת את מה שלא צריך
-לתקן את הכפתור של לעבור על עמוד הבא או לתת יותר מידע באותו עמוד
-הטקסטפילד של המספר להפוך אותו לכזה של טלפון
-לאסור על לצרף אותו אותו בן אדם בדיוק
-
-
-*/
 
