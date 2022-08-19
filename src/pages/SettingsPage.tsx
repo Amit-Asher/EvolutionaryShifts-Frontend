@@ -36,6 +36,7 @@ export const SettingsPage = observer(() => {
                         >
                             Delete the company
                         </Button>
+                        {/* need to send to the manager the whole json config if he make a mistake */}
                     </div>
                 </div>
             </div>
