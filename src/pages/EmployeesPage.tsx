@@ -311,8 +311,8 @@ const headCells: readonly HeadCell[] = [
         disablePadding: true,
         label: ' Email',
     },
-    {   
-        id: 'phoneNumber',
+    {
+        id: 'password',
         numeric: false,
         disablePadding: true,
         label: 'Phone number',
