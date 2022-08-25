@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { ComponentStatus } from "./interfaces/common";
 import { loginService } from "./services/loginService";
 import { LoadingPaper } from "./components/Loading/LoadingPaper";
+import { ForgetPasswordPage } from "./pages/ForgetPasswordPage";
 
 export default function Portal() {
     const navigate = useNavigate();
@@ -70,6 +71,10 @@ export default function Portal() {
                     <Route
                         path={PagesUrl.Signup}
                         element={<SignupPage />}
+                    />
+                    <Route
+                        path={PagesUrl.ForgetPassword}
+                        element={<ForgetPasswordPage />}
                     />
 
                     {/* ***** ARRANGEMENT SUB TABS ****** */}
