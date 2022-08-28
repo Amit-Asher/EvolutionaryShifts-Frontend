@@ -88,7 +88,7 @@
     "workbox-webpack-plugin": "^6.4.1"
   },
   "scripts": {
-    "start": "node scripts/start.js",
+    "start": "npm run codegen-build-stubs && node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
     "codegen-build-stubs": "java -jar ./scripts/swagger-codegen-cli-3.0.30.jar generate -l typescript-fetch -i ./src/swagger/spec/swagger.json -o ./src/swagger/stubs --additional-properties=supportES6=true && node ./scripts/fix-gen-api.js"

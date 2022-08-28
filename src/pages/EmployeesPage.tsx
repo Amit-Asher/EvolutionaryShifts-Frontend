@@ -38,10 +38,6 @@ import { Paper } from '@mui/material';
 import { observer } from 'mobx-react';
 import { EmployeeApi, EmployeeDTO, EmployeesDTO, GenericResponseDTO, NewEmployeeDTO, RoleApi, RolesDTO, SettingsApi } from '../swagger/stubs';
 import AsyncSelect from 'react-select/async';
-import cssVars from '@mui/system/cssVars';
-import { FormControlUnstyledContext } from '@mui/base';
-import { isGenerator } from 'mobx/dist/internal';
-
 
 const Root = styled('div')(
     ({ theme }) => `
@@ -312,7 +308,7 @@ const headCells: readonly HeadCell[] = [
         label: ' Email',
     },
     {
-        id: 'password',
+        id: 'phoneNumber',
         numeric: false,
         disablePadding: true,
         label: 'Phone number',
