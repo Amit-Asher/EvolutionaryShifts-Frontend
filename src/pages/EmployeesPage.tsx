@@ -46,6 +46,16 @@ import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import SearchBar from "material-ui-search-bar";
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 
+enum EmpsSubTab {
+    Employees,
+    Roles
+}
+
+
+const onlyLetters = (str: string): boolean => {
+    return /^[a-zA-Z]+$/.test(str);
+  }
+
 const Label = styled('label')`
   padding: 0 0 4px;
   line-height: 1.5;
@@ -413,7 +423,7 @@ export const EmployeesPage = observer(() => {
     const [selectedRoles, setSelectedRoles] = React.useState<string[]>([]);
     const [phoneNumber, setValuePhoneEmp] = React.useState("");
     const [valueFirstNameEmp, setValueFirstNameEmp] = React.useState("");
-    const [valueLasttNameEmp, setValueLasttNameEmp] = React.useState("");
+    const [valueLastNameEmp, setValueLastNameEmp] = React.useState("");
     const [valueEmailEmp, setValueEmailEmp] = React.useState("");
     const [valueAddRoleToEmp, setValueAddRoleToEmp] = React.useState("");
     const [valueGeneratePassword, setValueGeneratePassword] = React.useState("");
@@ -424,6 +434,279 @@ export const EmployeesPage = observer(() => {
     const [tableRows, setTableRows] = React.useState<EmployeeDTO[]>([]);
     const [roleRows, setRoleRows] = React.useState<string[]>([]);
     const [valuesearcheRole, setValuesearcheRole] = React.useState<string>("");
+    const [currentTab, setCurrentTab] = React.useState<EmpsSubTab>(EmpsSubTab.Roles);
+
+    const getRolesTab = () => {
+        return (
+            <div
+                style={{
+                    width: "100%",
+                    height: '100%',
+                    marginRight: "100px",
+                    backgroundColor: '#fff',
+                    justifyContent: "center"
+                }}
+            >
+                {/* TITLE */}
+                <div
+                    style={{
+                        width: "100%",
+                        justifyContent: "center",
+                        display: "flex",
+                        paddingTop: '20px'
+                    }}
+                >
+                    <Typography variant="h6" gutterBottom component="div">
+                        Roles Dashboard
+                    </Typography>
+                </div>
+                <div style={{ display: 'flex', marginBottom: "10px" }}>
+                <TextField id="addNewRoleTextField" label="New Role" variant="outlined" value={valueNewRole}
+                  onChange={handleChangeNewRole} style={{ marginRight: "30px"}} />
+                <Button id="addNewRoleButton" disableElevation={true} variant="contained" onClick={(event) => {
+                         if (valueNewRole.length === 0)
+                             console.log("new role is empty");
+                         else if(valueNewRole.includes(' '))
+                             console.log("new role can not contain ' '");
+                         else
+                             addNewRole(valueNewRole);
+                         setValueNewRole(""); 
+                      }}
+                >Add New Role
+                </Button>      
+                </div>
+                <SearchBar 
+                    value={valuesearcheRole}
+                    onChange={(searchVal) => {requestSearchRole(searchVal)}}
+                    onCancelSearch={() => cancelSearchRole()}/>
+                <RolesList></RolesList>
+            </div>);
+    }
+
+    const getEmployeesTab = () => {
+        return (
+            <div
+                style={{
+                    width: "100%",
+                    height: '100%',
+                    marginRight: "100px",
+                    backgroundColor: '#fff',
+                    justifyContent: "center"
+                }}
+            >
+                {/* TITLE */}
+                <div
+                    style={{
+                        width: "100%",
+                        justifyContent: "center",
+                        display: "flex",
+                        paddingTop: '20px'
+                    }}
+                >
+                    <Typography variant="h6" gutterBottom component="div">
+                        Employees Dashboard
+                    </Typography>
+                </div>
+        
+                <div style={{ display: 'flex'}}>
+                <TextField id="firstNameEmpTextField" label="First Name" variant="outlined" value={valueFirstNameEmp}
+                 onChange={handleChangeEmpFirstName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
+                <TextField id="LastNameEmpTextField" label="Last Name" variant="outlined" value={valueLastNameEmp}
+                 onChange={handleChangeEmpLastName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
+                <TextField id="EmailEmpTextField" label="Email" variant="outlined" value={valueEmailEmp}
+                 onChange={handleChangeEmpEmail} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
+                <PhoneInput id="phoneEmpTextField" defaultCountry="IL" placeholder="Enter phone number" value={phoneNumber}
+                    onChange={handleChangePhoneName} style={{ marginRight: "20px", marginTop: "20px" }} />
+                <div style={{ display: "inline-block", marginRight: "20px", marginTop: "20px" }}>
+                    <Label>Select Roles</Label>
+                    <div>
+                        <AsyncSelect
+                            isMulti
+                            cacheOptions
+                            onChange={(allSelected) => setSelectedRoles(allSelected.map((item: any) => item?.value))}
+                            loadOptions={(inputVal, cb) => {
+                                getRoles().then(RolesFromServer => {
+                                    cb(RolesFromServer.map(item => ({
+                                        value: item,
+                                        label: item
+                                    })));
+                                })
+                            }}
+                            key={`${roleSelectKey}`}
+                            defaultOptions
+                        />
+                    </div>
+                </div>
+                <Button 
+                id={"addEmpButton"} 
+                variant="contained" 
+                disableElevation={true} 
+                style={{ marginTop: "20px", marginRight: "10px" }} 
+                onClick={(event) => {
+                    var newEmp: NewEmployeeDTO = { 
+                        firstName: valueFirstNameEmp,
+                        lastName: valueLastNameEmp,
+                        fullName: valueFirstNameEmp.concat(" ").concat(valueLastNameEmp),
+                        email: valueEmailEmp,
+                        phoneNumber: phoneNumber,
+                        roles: selectedRoles };
+                
+                    if (valueFirstNameEmp === "" ) {
+                        console.log("Employee first name is empty");
+                    }
+                    else if (valueLastNameEmp === "" ) {
+                        console.log("Employee last name is empty");
+                    }
+                    else if (valueEmailEmp.length === 0) {
+                        console.log("Employee last name is empty");
+                    }
+                    else if (phoneNumber.length === 0) {
+                        console.log("Employee phone is empty");
+                    }
+                    else if (selectedRoles.length === 0) {
+                        console.log("Employee roles is empty");
+                    }
+                    else {
+                        sendNewEmployee(newEmp);
+                    }
+                }}
+                >Add Employee
+                </Button>
+                </div>
+                <SearchBar 
+                value={valuesearchedEmp}
+                onChange={(searchVal) => {requestSearchEmp(searchVal)}}
+                onCancelSearch={() => cancelSearchEmp()}/>
+                <EnhancedTableToolbar
+                selectedEmpToRemove={selectedEmpToRemove}
+                employees={employees} 
+                setEmployees={setEmployees} 
+                numSelected={selectedEmpToRemove.length}
+                tableRows={tableRows}
+                setTableRows={setTableRows}
+                setSelectedEmpToRemove={setSelectedEmpToRemove}/>
+                <TableContainer>
+                <Table
+                    sx={{ minWidth: 750 }}
+                    aria-labelledby="tableTitle"
+                    size={dense ? 'small' : 'medium'}
+                >
+                    <EnhancedTableHead
+                        numSelected={selectedEmpToRemove.length}
+                        order={order}
+                        orderBy={orderBy}
+                        onSelectAllClick={handleSelectAllClick}
+                        onRequestSort={handleRequestSort}
+                        rowCount={tableRows.length}
+                    />
+                    {<TableBody>
+                        {//stableSort<EmployeeDTO>(tableRows, getComparator(order, orderBy))
+                            tableRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((employee: EmployeeDTO, index: number) => {
+                                    const isItemSelected = isSelected((employee.id || "*error*").toString());
+                                    const labelId = `enhanced-table-checkbox-${index}`;
+
+                                    return (
+                                        <TableRow
+                                            hover
+                                            role="checkbox"
+                                            aria-checked={isItemSelected}
+                                            tabIndex={-1}
+                                            key={employee.id}
+                                            selected={isItemSelected}>
+
+                                            <TableCell
+                                                padding="checkbox"
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                <Checkbox
+                                                    color="primary"
+                                                    checked={isItemSelected}
+                                                    inputProps={{
+                                                        'aria-labelledby': labelId,
+                                                    }} />
+                                            </TableCell>
+                                            <TableCell
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}
+                                                component="th"
+                                                id={labelId}
+                                                scope="row"
+                                                padding="none"
+                                            >
+                                                {employee.firstName}
+                                            </TableCell>
+                                            <TableCell
+                                            padding="none"
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                {employee.lastName}
+                                            </TableCell>
+                                            <TableCell
+                                            padding="none"
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                {employee.email}
+                                            </TableCell>
+                                            <TableCell
+                                            padding="none"
+                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                {employee.phoneNumber}
+                                            </TableCell>
+                                            <TableCell padding="none" >
+                                                <RolesListForEmp employee={employee} employees={employees} setEmployees={setEmployees}
+                                                tableRows={tableRows} setTableRows={setTableRows}/>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                }
+                                )
+                        }
+                        {emptyRows > 0 && (
+                            <TableRow
+                                style={{
+                                    height: (dense ? 33 : 53) * emptyRows,
+                                }}
+                            >
+                                <TableCell colSpan={6} />
+                            </TableRow>
+                        )}
+                    </TableBody>
+                    }
+                </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={tableRows.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+
+
+            </div>);
+    }
+
+   
+
+    const getCurrentTab = () => {
+        switch (currentTab) {
+            case EmpsSubTab.Employees:
+                return getEmployeesTab();
+            case EmpsSubTab.Roles:
+                return getRolesTab();
+            default:
+                console.log('unsupported tab')
+                return <div />;
+        }
+    }
+
+    const clearComponentsAfterAddNewEmp = () => {
+        setValueFirstNameEmp("");
+        setValueLastNameEmp("")
+        setValueEmailEmp("");
+        setValuePhoneEmp("");
+        setRoleSelectKey(prev => prev + 1);
+    }
+
 
     const requestSearchRole = async (searchVal: string) => {
         setValuesearcheRole(searchVal);
@@ -458,7 +741,7 @@ export const EmployeesPage = observer(() => {
         setValuesearchedEmp(searchVal);
         if(searchVal === "")
         {
-            setTableRows(employees);
+            setTableRows([...employees]);
         }
         else{
             let filterRows: EmployeeDTO[];
@@ -505,11 +788,15 @@ export const EmployeesPage = observer(() => {
              };
     
             var tempemps = employees;
-            tempemps.unshift(EmpToAdd);
+            tempemps.unshift(EmpToAdd);            
 
-            var temprows = tableRows;
-            temprows.unshift(EmpToAdd);
+            if(!tableRows.includes(EmpToAdd)){
+                var temprows = tableRows;
+                temprows.unshift(EmpToAdd);
+            }
             requestSearchEmp(valuesearchedEmp);
+
+            clearComponentsAfterAddNewEmp();
     
             console.log(res.message);
             console.log("The password for the employee is: " + res.tmpPassword);
@@ -644,7 +931,6 @@ export const EmployeesPage = observer(() => {
     const RolesList= () => {
         return (
         <FixedSizeList 
-        style={{marginLeft: "20px"}}
         height={400}
         width={300}
         itemSize={46}
@@ -698,8 +984,27 @@ export const EmployeesPage = observer(() => {
     };
 
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
+        const number = parseInt(event.target.value, 10);
+        setRowsPerPage(number);
         setPage(0);
+
+        const e = document.getElementById("divPage");
+        if(e !== null)
+            switch(number)
+            {
+                case 5:
+                    e.style.height = "740px";
+                    break;
+                case 10:
+                    e.style.height = "870px";
+                    break;
+                case 25:
+                    e.style.height = "1230px";
+                    break;
+                default:
+                    console.log('unsupported number rows to page');
+                    break;
+            }
     };
 
     const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -717,14 +1022,14 @@ export const EmployeesPage = observer(() => {
 
     const handleChangeEmpFirstName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
         const name: string = e.target.value.toString();
-        if (name[name.length - 1] < '0' || name[name.length - 1] > '9' || name.length === 0)
-        setValueFirstNameEmp(e.target.value);
+        if(onlyLetters(name) || name.length === 0)
+            setValueFirstNameEmp(name);
     };
 
     const handleChangeEmpLastName = (e: { target: { value: React.SetStateAction<string>; }; }) => {
         const name: string = e.target.value.toString();
-        if (name[name.length - 1] < '0' || name[name.length - 1] > '9' || name.length === 0)
-        setValueLasttNameEmp(e.target.value);
+        if(onlyLetters(name) || name.length === 0)
+            setValueLastNameEmp(name);
     };
 
     const handleChangeEmpEmail = (e: { target: { value: React.SetStateAction<string>; }; }) => {
@@ -737,249 +1042,21 @@ export const EmployeesPage = observer(() => {
 
     const handleChangeNewRole = (e: { target: { value: React.SetStateAction<string>; }; }) => {
         const role: string = e.target.value.toString();
-        if (role[role.length - 1] < '0' || role[role.length - 1] > '9' || role.length === 0)
-        setValueNewRole(e.target.value);
+        if(onlyLetters(role) || role.length === 0)
+            setValueNewRole(role);
     };
 
-
     return (<>
-     <Button id="Roles_Dashboard" disableElevation={true} variant="contained" onClick={(event) => {
-                        const e = document.getElementById("Roles Dashboard");
-                        const b = document.getElementById("Roles_Dashboard");
-                        if (e != null) 
-                        {
-                            if (e.style.display === 'none')
-                            {
-                                e.style.display = 'block';    
-                                if (b != null) 
-                                    b.innerHTML = "Hide Roles Dashboard";
-                            } 
-                            else 
-                            {   
-                                e.style.display = 'none';
-                                if (b != null) 
-                                    b.innerHTML = "Show Roles Dashboard";
-                            }
-                        }
-                     }}
-            >Hide Roles Dashboard
-            </Button>     
-        <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
-        <div id="Roles Dashboard">
-            <div style={{ display: 'flex', marginTop: "10px", marginLeft: "10px", marginBottom: "10px" }}>
-            <TextField id="addNewRoleTextField" label="New Role" variant="outlined" value={valueNewRole}
-                 onChange={handleChangeNewRole} style={{ marginRight: "30px"}} />
-            <Button id="addNewRoleButton" disableElevation={true} variant="contained" onClick={(event) => {
-                        if (valueNewRole.length === 0)
-                            console.log("new role is empty");
-                        else if(valueNewRole.includes(' '))
-                            console.log("new role can not contain ' '");
-                        else
-                            addNewRole(valueNewRole);
-                        setValueNewRole(""); 
-                     }}
-            >Add New Role
-            </Button>      
-           </div>
-           <SearchBar 
-            value={valuesearcheRole}
-            onChange={(searchVal) => {requestSearchRole(searchVal)}}
-            onCancelSearch={() => cancelSearchRole()}/>
-           <RolesList></RolesList>
-           </div>
-
-           
-            <div style={{ display: 'flex', marginBottom: "10px" }}>
-                <TextField id="firstNameEmpTextField" label="First Name" variant="outlined" value={valueFirstNameEmp}
-                 onChange={handleChangeEmpFirstName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
-                <TextField id="LastNameEmpTextField" label="Last Name" variant="outlined" value={valueLasttNameEmp}
-                 onChange={handleChangeEmpLastName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
-                <TextField id="EmailEmpTextField" label="Email" variant="outlined" value={valueEmailEmp}
-                 onChange={handleChangeEmpEmail} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
-                <PhoneInput id="phoneEmpTextField" defaultCountry="IL" placeholder="Enter phone number" value={phoneNumber}
-                    onChange={handleChangePhoneName} style={{ marginRight: "20px", marginTop: "20px" }} />
-
-                <div style={{ display: "inline-block", marginRight: "20px", marginTop: "20px" }}>
-                    <Label>Select Roles</Label>
-                    <div>
-                        <AsyncSelect
-                            isMulti
-                            cacheOptions
-                            onChange={(allSelected) => setSelectedRoles(allSelected.map((item: any) => item?.value))}
-                            loadOptions={(inputVal, cb) => {
-                                getRoles().then(RolesFromServer => {
-                                    cb(RolesFromServer.map(item => ({
-                                        value: item,
-                                        label: item
-                                    })));
-                                })
-                            }}
-                            key={`${roleSelectKey}`}
-                            defaultOptions
-                        />
-                    </div>
-                </div>
-
-
-                <Button 
-                id={"addEmpButton"} 
-                variant="contained" 
-                disableElevation={true} 
-                style={{ marginTop: "20px", marginRight: "10px" }} 
-                onClick={(event) => {
-                    var newEmp: NewEmployeeDTO = { 
-                        firstName: valueFirstNameEmp,
-                        lastName: valueLasttNameEmp,
-                        fullName: valueFirstNameEmp.concat(" ").concat(valueLasttNameEmp),
-                        email: valueEmailEmp,
-                        phoneNumber: phoneNumber,
-                        roles: selectedRoles };
-                
-                    if (valueFirstNameEmp.length === 0 || !valueFirstNameEmp.match(/[a-z]/i)) {
-                        console.log("Employee name is not valid");
-                    }
-                    else if (phoneNumber.length === 0) {
-                        console.log("Employee phone is empty");
-                    }
-                    else if (selectedRoles.length === 0) {
-                        console.log("Employee roles is empty");
-                    }
-                    else {
-                        sendNewEmployee(newEmp);
-                    }
-                }}
-                >Add Employee
-                </Button>
+        <div style={{ width: '100%', height: '740px', display: 'flex' }} id="divPage">
+            <div style={{ width: '20%', height: '100%', backgroundColor: '#fff' }}>
+                <div style={{ width: '100%', color: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', display: 'flex' }}><h3>Settings</h3></div>
+                <div><Button style={{ width: '100%', paddingTop: '10px' }} onClick={() => setCurrentTab(EmpsSubTab.Roles)}>Roles</Button></div>
+                <div><Button style={{ width: '100%', paddingTop: '10px' }} onClick={() => setCurrentTab(EmpsSubTab.Employees)}>Employees</Button></div>
             </div>
-
-            <SearchBar 
-            value={valuesearchedEmp}
-            onChange={(searchVal) => {requestSearchEmp(searchVal)}}
-            onCancelSearch={() => cancelSearchEmp()}/>
-                            
-
-
-            <EnhancedTableToolbar
-            selectedEmpToRemove={selectedEmpToRemove}
-            employees={employees} 
-            setEmployees={setEmployees} 
-            numSelected={selectedEmpToRemove.length}
-            tableRows={tableRows}
-            setTableRows={setTableRows}
-            setSelectedEmpToRemove={setSelectedEmpToRemove}/>
-
-            <TableContainer>
-                <Table
-                    sx={{ minWidth: 750 }}
-                    aria-labelledby="tableTitle"
-                    size={dense ? 'small' : 'medium'}
-                >
-                    <EnhancedTableHead
-                        numSelected={selectedEmpToRemove.length}
-                        order={order}
-                        orderBy={orderBy}
-                        onSelectAllClick={handleSelectAllClick}
-                        onRequestSort={handleRequestSort}
-                        rowCount={tableRows.length}
-                    />
-                    {<TableBody>
-                        {//stableSort<EmployeeDTO>(tableRows, getComparator(order, orderBy))
-                            tableRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((employee: EmployeeDTO, index: number) => {
-                                    const isItemSelected = isSelected((employee.id || "*error*").toString());
-                                    const labelId = `enhanced-table-checkbox-${index}`;
-
-                                    return (
-                                        <TableRow
-                                            hover
-                                            role="checkbox"
-                                            aria-checked={isItemSelected}
-                                            tabIndex={-1}
-                                            key={employee.id}
-                                            selected={isItemSelected}>
-
-                                            <TableCell
-                                                padding="checkbox"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                <Checkbox
-                                                    color="primary"
-                                                    checked={isItemSelected}
-                                                    inputProps={{
-                                                        'aria-labelledby': labelId,
-                                                    }} />
-                                            </TableCell>
-                                            <TableCell
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}
-                                                component="th"
-                                                id={labelId}
-                                                scope="row"
-                                                padding="none"
-                                            >
-                                                {employee.firstName}
-                                            </TableCell>
-                                            <TableCell
-                                            padding="none"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                {employee.lastName}
-                                            </TableCell>
-                                            <TableCell
-                                            padding="none"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                {employee.email}
-                                            </TableCell>
-                                            <TableCell
-                                            padding="none"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                {employee.phoneNumber}
-                                            </TableCell>
-                                            <TableCell padding="none" >
-                                                <RolesListForEmp employee={employee} employees={employees} setEmployees={setEmployees}
-                                                tableRows={tableRows} setTableRows={setTableRows}/>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                }
-                                )
-                        }
-                        {emptyRows > 0 && (
-                            <TableRow
-                                style={{
-                                    height: (dense ? 33 : 53) * emptyRows,
-                                }}
-                            >
-                                <TableCell colSpan={6} />
-                            </TableRow>
-                        )}
-                    </TableBody>
-                    }
-                </Table>
-            </TableContainer>
-            <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={tableRows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-
-            <div style={{ marginTop: "40px", marginLeft: "100px", marginBottom: "10px" }}>      
-            <Label>Generate new random password to employee</Label>
-            <div>
-                
-                <TextField id="addRoleToEmpTextField" label="Full Name" variant="outlined" value={valueAddRoleToEmp}
-                 onChange={handleChangeAddRoleToEmp} style={{ marginRight: "20px" }} />
-                 <Button style={{marginRight: "10px"}} id="addEmpButton" disableElevation={true} variant="contained" onClick={(event) => {
-                        generatePasswordToEmp(valueAddRoleToEmp, employees, setValueGeneratePassword);
-                     }}
-                >Generate</Button>
-                <Label style={{display: "inline"}}>{valueGeneratePassword}</Label>
+            <div style={{ width: '80%', height: '100%' }}>
+                {getCurrentTab()}
             </div>
-            </div>   
-
-        </Paper>
+        </div>
     </>
     );
 });
-
