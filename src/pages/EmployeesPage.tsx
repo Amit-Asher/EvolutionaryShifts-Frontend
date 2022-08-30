@@ -742,9 +742,30 @@ export const EmployeesPage = observer(() => {
     };
 
 
-
     return (<>
+     <Button id="Roles_Dashboard" disableElevation={true} variant="contained" onClick={(event) => {
+                        const e = document.getElementById("Roles Dashboard");
+                        const b = document.getElementById("Roles_Dashboard");
+                        if (e != null) 
+                        {
+                            if (e.style.display === 'none')
+                            {
+                                e.style.display = 'block';    
+                                if (b != null) 
+                                    b.innerHTML = "Hide Roles Dashboard";
+                            } 
+                            else 
+                            {   
+                                e.style.display = 'none';
+                                if (b != null) 
+                                    b.innerHTML = "Show Roles Dashboard";
+                            }
+                        }
+                     }}
+            >Hide Roles Dashboard
+            </Button>     
         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
+        <div id="Roles Dashboard">
             <div style={{ display: 'flex', marginTop: "10px", marginLeft: "10px", marginBottom: "10px" }}>
             <TextField id="addNewRoleTextField" label="New Role" variant="outlined" value={valueNewRole}
                  onChange={handleChangeNewRole} style={{ marginRight: "30px"}} />
@@ -765,6 +786,7 @@ export const EmployeesPage = observer(() => {
             onChange={(searchVal) => {requestSearchRole(searchVal)}}
             onCancelSearch={() => cancelSearchRole()}/>
            <RolesList></RolesList>
+           </div>
 
            
             <div style={{ display: 'flex', marginBottom: "10px" }}>
