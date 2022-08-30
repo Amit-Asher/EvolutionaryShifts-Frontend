@@ -45,6 +45,7 @@ import { companyService } from '../services/companyService';
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import SearchBar from "material-ui-search-bar";
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import { globalStore } from '../stores/globalStore';
 
 enum EmpsSubTab {
     Employees,
@@ -134,11 +135,12 @@ const deleteRoleForEmp = async (employee: EmployeeDTO, role: string, employees: 
          });
          setTableRows([...rowsTableAfterChange]);
 
-
          console.log(res.message);
+         globalStore.notificationStore.show({ message: res.message || "**error**", severity:"success" });
          //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
     }catch (err) {
         console.log(`Failed to remove role: '${role}' from employee: '${employee.fullName}'`);
+        globalStore.notificationStore.show({ message: `Failed to remove role: '${role}' from employee: '${employee.fullName}'`, severity:"error" });
         }
 }
 
@@ -168,6 +170,7 @@ function RolesListForEmp(props: RolesListForEmpProps) {
                             deleteRoleForEmp(employee, (employee.roles || [])[i], employees, setEmployees, tableRows, setTableRows);
                         else
                            console.log(`Can not remoove role: ${(employee.roles || [])[i]} from employee: ${employee} when the size of the roles is less than 1`);
+                           globalStore.notificationStore.show({ message: `Can not remoove role: ${(employee.roles || [])[i]} from employee: ${employee} when the size of the roles is less than 1`, severity:"error" });
                     }}>
                         <DeleteIcon />
                     </IconButton>
@@ -284,22 +287,13 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         (property: keyof EmployeeDTO) => (event: React.MouseEvent<unknown>) => {
             onRequestSort(event, property);
         };
+        
+        let repairHeadCell: JSX.Element[] = [];
 
-    return (
-        <TableHead>
-            <TableRow>
-                <TableCell padding="checkbox">
-                    <Checkbox
-                        color="primary"
-                        indeterminate={numSelected > 0 && numSelected < rowCount}
-                        checked={rowCount > 0 && numSelected === rowCount}
-                        onChange={onSelectAllClick}
-                        inputProps={{
-                            'aria-label': 'select all employees',
-                        }}
-                    />
-                </TableCell>
-                {headCells.map((headCell) => (
+        headCells.map((headCell) =>{
+            if(headCell.id !== "roles")
+            {
+                repairHeadCell.push(
                     <TableCell
                         key={headCell.id}
                         align={headCell.numeric ? 'right' : 'left'}
@@ -319,7 +313,36 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                             ) : null}
                         </TableSortLabel>
                     </TableCell>
-                ))}
+                );
+            }
+            else{
+                repairHeadCell.push(
+                    <TableCell
+                        key={headCell.id}
+                        align={headCell.numeric ? 'right' : 'left'}
+                        padding={headCell.disablePadding ? 'none' : 'normal'}
+                    >
+                    {headCell.label}
+                    </TableCell>
+                );
+            }
+        });
+
+    return (
+        <TableHead>
+            <TableRow>
+                <TableCell padding="checkbox">
+                    <Checkbox
+                        color="primary"
+                        indeterminate={numSelected > 0 && numSelected < rowCount}
+                        checked={rowCount > 0 && numSelected === rowCount}
+                        onChange={onSelectAllClick}
+                        inputProps={{
+                            'aria-label': 'select all employees',
+                        }}
+                    />
+                </TableCell>
+                {repairHeadCell}
             </TableRow>
         </TableHead>
     );
@@ -338,8 +361,11 @@ const deleteSelectedEmp = async (selectedEmpToRemove: readonly string[], employe
             tempEmps = tempEmps.filter(emp => emp.id !== selectedEmpToRemove[i]);
             tempRows = tempRows.filter(emp => emp.id !== selectedEmpToRemove[i]);
             console.log("Sucsses to remove employee: " + selectedEmpToRemove[i]);
+            globalStore.notificationStore.show({ message: `Sucsses to remove employee: ${selectedEmpToRemove[i]}`, severity:"success" });
         } catch (err) {
             console.log("failed to remove employee: " + selectedEmpToRemove[i]);
+            globalStore.notificationStore.show({ message: `failed to remove employee: ${selectedEmpToRemove[i]}`, severity:"error" });
+
         }
     }
     setEmployees(tempEmps);
@@ -399,11 +425,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
                     </IconButton>
                 </Tooltip>
             ) : (
-                <Tooltip title="Filter list">
-                    <IconButton>
-                        <FilterListIcon />
-                    </IconButton>
-                </Tooltip>
+                <div/>     
             )}
         </Toolbar>
     );
@@ -465,11 +487,12 @@ export const EmployeesPage = observer(() => {
                   onChange={handleChangeNewRole} style={{ marginRight: "30px"}} />
                 <Button id="addNewRoleButton" disableElevation={true} variant="contained" onClick={(event) => {
                          if (valueNewRole.length === 0)
-                             console.log("new role is empty");
-                         else if(valueNewRole.includes(' '))
-                             console.log("new role can not contain ' '");
+                         {
+                            console.log("new role is empty");
+                            globalStore.notificationStore.show({ message: "new role is empty", severity:"error" });
+                         }
                          else
-                             addNewRole(valueNewRole);
+                            addNewRole(valueNewRole);
                          setValueNewRole(""); 
                       }}
                 >Add New Role
@@ -553,18 +576,23 @@ export const EmployeesPage = observer(() => {
                 
                     if (valueFirstNameEmp === "" ) {
                         console.log("Employee first name is empty");
+                        globalStore.notificationStore.show({ message: "Employee first name is empty", severity:"error" });
                     }
                     else if (valueLastNameEmp === "" ) {
                         console.log("Employee last name is empty");
+                        globalStore.notificationStore.show({ message: "Employee last name is empty", severity:"error" });
                     }
                     else if (valueEmailEmp.length === 0) {
-                        console.log("Employee last name is empty");
+                        console.log("Employee email is empty");
+                        globalStore.notificationStore.show({ message: "Employee email is empty", severity:"error" });
                     }
                     else if (phoneNumber.length === 0) {
                         console.log("Employee phone is empty");
+                        globalStore.notificationStore.show({ message: "Employee phone is empty", severity:"error" });
                     }
                     else if (selectedRoles.length === 0) {
                         console.log("Employee roles is empty");
+                        globalStore.notificationStore.show({ message: "Employee roles is empty", severity:"error" });
                     }
                     else {
                         sendNewEmployee(newEmp);
@@ -735,6 +763,50 @@ export const EmployeesPage = observer(() => {
         requestSearchRole("");
     }
 
+    const multiFilterSearchEmp = (arr: EmployeeDTO[], searchVal: string) : EmployeeDTO[] => {
+        const searchValLC = searchVal.toLowerCase();
+        let filterByName = arr.filter((emp) => {
+            return emp.fullName?.toLowerCase().includes(searchValLC);
+        });
+        let filterByRole = arr.filter((emp) => {
+            let flag = false;
+
+            for(let i = 0;i < (emp.roles || []).length;i++){
+
+                if((emp.roles || [])[i].toLocaleLowerCase().includes(searchValLC))
+                {
+                    flag = true;
+                    break;
+                }
+
+            }
+
+            return flag;
+        });
+        let filterByPhone = arr.filter((emp) => {
+            return emp.phoneNumber?.toLowerCase().includes(searchValLC);
+        });
+        let filterByEmail = arr.filter((emp) => {
+            return emp.email?.toLowerCase().includes(searchValLC);
+        });
+
+
+        let sumAllFilter = filterByName.concat(filterByRole, filterByPhone, filterByEmail);
+
+        return sumAllFilter.filter((emp, index) => {
+        let indexof: number = -1;
+        for(let i = 0;i < sumAllFilter.length;i++){
+            if(sumAllFilter[i].id === emp.id)
+            {
+                indexof = i;
+                break;
+            }
+        }
+
+         return indexof === index;
+        } );
+    }
+
 
     const requestSearchEmp = async (searchVal: string) => {
         setPage(0);
@@ -748,14 +820,11 @@ export const EmployeesPage = observer(() => {
     
             if(valuesearchedEmp.length > searchVal.length)
             {
-                filterRows = employees.filter((emp) => {
-                    return emp.fullName?.toLowerCase().includes(searchVal.toLowerCase());
-                });
+                filterRows = multiFilterSearchEmp(employees, searchVal);
             }
-            else{
-                filterRows = tableRows.filter((emp) => {
-                    return emp.fullName?.toLowerCase().includes(searchVal.toLowerCase());
-                });
+            else
+            {
+                filterRows = multiFilterSearchEmp(tableRows, searchVal);
             }
             setTableRows(filterRows);
         }
@@ -800,9 +869,11 @@ export const EmployeesPage = observer(() => {
     
             console.log(res.message);
             console.log("The password for the employee is: " + res.tmpPassword);
+            globalStore.notificationStore.show({ message: res.message || "**error**", severity:"success" });
             //need to send somehome to the employee his new password
         } catch (err) {
             console.log('failed to set employee');
+            globalStore.notificationStore.show({ message: "failed to set employee", severity:"error" });
         }
     }
 
@@ -833,6 +904,7 @@ export const EmployeesPage = observer(() => {
                 if(employees[i].roles?.includes(roleToRemove))
                 {
                     console.log(`Can not delete role '${roleToRemove}' because the employee '${employees[i].fullName}' has it`);
+                    globalStore.notificationStore.show({ message: `Can not delete role '${roleToRemove}' because the employee '${employees[i].fullName}' has it`, severity:"error" });
                     return;
                 }
             }
@@ -853,9 +925,12 @@ export const EmployeesPage = observer(() => {
                 }
                 //setRoleRows([...updateRoleRows]);
                 console.log(res.message);
+                globalStore.notificationStore.show({ message: res.message || "**error**", severity:"success" });
+
             }
             catch (err) {
-            console.log(`Failed to delete role '${roleToRemove}'`);
+                console.log(`Failed to delete role '${roleToRemove}'`);
+                globalStore.notificationStore.show({ message: `Failed to delete role '${roleToRemove}'`, severity:"error" });
             }
         }
     }
@@ -864,6 +939,7 @@ export const EmployeesPage = observer(() => {
         if(roleRows.includes(newRole))
         {
             console.log(`Can not add role '${newRole}' because he is already exsists`);
+            globalStore.notificationStore.show({ message: `Can not add role '${newRole}' because he is already exsists`, severity:"error" });
         }
         else{
             try {
@@ -880,8 +956,10 @@ export const EmployeesPage = observer(() => {
                     //setRoleRows(roleRows);
                 }
                 console.log(res.message);
+                globalStore.notificationStore.show({ message: res.message || "*error*", severity:"success" });
             } catch (err) {
                 console.log(`Failed to add new role '${newRole}'`);
+                globalStore.notificationStore.show({ message: `Failed to add new role '${newRole}'`, severity:"error" });
             }
         }
     }
@@ -921,11 +999,13 @@ export const EmployeesPage = observer(() => {
     
              setEmployees([...emplyeesAfterChange]);
              console.log(res.message);
+             globalStore.notificationStore.show({ message: res.message || "*error*", severity:"success" });
             //console.log(`employees: ${JSON.stringify(employees, undefined, 2)}`)
         }
         catch (err) {
             console.log(`Failed to add role: '${role}' to employee: '${employee.fullName}'`);
-            }
+            globalStore.notificationStore.show({ message: `Failed to add role: '${role}' to employee: '${employee.fullName}'`, severity:"error" });
+        }
     }
 
     const RolesList= () => {
@@ -948,6 +1028,42 @@ export const EmployeesPage = observer(() => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
+
+        switch(property)
+        {
+            case "firstName":
+            {
+                if(order === 'asc')
+                    tableRows.sort((e1, e2) => e1.firstName?.localeCompare(e2.firstName || "a") || 0);
+                else
+                    tableRows.sort((e1, e2) => e2.firstName?.localeCompare(e1.firstName || "a") || 0);
+                break;
+            }
+            case "lastName":
+            {
+                if(order === 'asc')
+                    tableRows.sort((e1, e2) => e1.lastName?.localeCompare(e2.lastName || "a") || 0);
+                else
+                    tableRows.sort((e1, e2) => e2.lastName?.localeCompare(e1.lastName || "a") || 0);
+                break;
+            }
+            case "email":
+            {
+                if(order === 'asc')
+                    tableRows.sort((e1, e2) => e1.email?.localeCompare(e2.email || "a") || 0);
+                else
+                    tableRows.sort((e1, e2) => e2.email?.localeCompare(e1.email || "a") || 0);
+                break;
+            }
+            case "phoneNumber":
+            {
+                if(order === 'asc')
+                    tableRows.sort((e1, e2) => e1.phoneNumber?.localeCompare(e2.phoneNumber || "a") || 0);
+                else
+                    tableRows.sort((e1, e2) => e2.phoneNumber?.localeCompare(e1.phoneNumber || "a") || 0);
+                break;
+            }
+        }
     };
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {

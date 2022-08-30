@@ -23,6 +23,7 @@ const publishArrangement = async (): Promise<void> => {
         // POST REQUEST
         const res = await (new PublishApi()).publishArrangement();
         console.log(res.message);
+        globalStore.notificationStore.show({ message: res.message || "**error**", severity:"success" });
     } catch (err) {
         console.log('failed to publish arrangement');
     }
@@ -36,10 +37,12 @@ const getSolution = async (setFitness: React.Dispatch<React.SetStateAction<strin
         setFitness("Fitness: ".concat(res.fitness?.toString() || ""));
         setGenerationNumber("Generation Number: ".concat(res.generationNumber?.toString() || " "));
         console.log('Success to get solution');
+        globalStore.notificationStore.show({ message: "Success to get solution", severity:"success" });
         return arrangement;
         
     } catch (err) {
         console.log('failed to get solution');
+        globalStore.notificationStore.show({ message: "Failed to get solution", severity:"error" });
         return [];
     }
 }
@@ -138,6 +141,7 @@ export const PublishPage = observer(() => {
             }
             else{
                 console.log("You need to get solution first");
+                globalStore.notificationStore.show({ message: "You need to get solution first", severity:"info" });
             }
         }}>
          Publish

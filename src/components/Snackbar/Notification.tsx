@@ -2,6 +2,15 @@ import { IconButton, Snackbar } from "@mui/material";
 import { observer } from "mobx-react";
 import { globalStore } from "../../stores/globalStore";
 import CloseIcon from '@mui/icons-material/Close';
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import React from "react";
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref,
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 function SnackBarNotification() {
 
@@ -20,12 +29,18 @@ function SnackBarNotification() {
 
     return (
         <Snackbar
-        open={globalStore.notificationStore.isOpen}
-        onClose={(e) => globalStore.notificationStore.hide()}
-        message={globalStore.notificationStore.message}
-        action={action}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      />
+            open={globalStore.notificationStore.isOpen}
+            onClose={(e) => globalStore.notificationStore.hide()}
+            action={action}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+            <Alert
+                onClose={(e) => globalStore.notificationStore.hide()} 
+                severity={globalStore.notificationStore.severity} 
+                sx={{ width: '100%' }}>
+                {globalStore.notificationStore.message}
+            </Alert>
+        </Snackbar>
     );
 }
 
