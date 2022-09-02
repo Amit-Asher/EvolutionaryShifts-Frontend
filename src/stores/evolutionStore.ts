@@ -109,7 +109,7 @@ export class EvolutionStore {
         const isExist = this.termConds.some(termCond => termCond.type === type);
         const emptyParams = Object.keys(params).length === 0;
         if (isExist && emptyParams) {
-            this.notificationStore.show({ message: 'Termination Condition Already Exist!' });
+            this.notificationStore.show({ message: 'Termination Condition Already Exist!', severity:"warning" });
             return;
         }
 

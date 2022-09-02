@@ -14,14 +14,14 @@ class CompanyService {
             if (this.employeesCache.length === 0) {
                 const res = await (new EmployeeApi()).getAllEmployees({ credentials: 'include' });
                 if (!res) {
-                    globalStore.notificationStore.show({ message: 'Failed to fetch employees' });
+                    globalStore.notificationStore.show({ message: 'Failed to fetch employees', severity:"error" });
                     return [];
                 }
                 this.employeesCache = res.employees ?? [];
             }
             return this.employeesCache ?? [];
         } catch (err) {
-            globalStore.notificationStore.show({ message: 'Failed to fetch employees' });
+            globalStore.notificationStore.show({ message: 'Failed to fetch employees', severity:"error" });
             console.error('[companyService][getEmployees] Failed to fetch employees');
             return this.employeesCache ?? [];
         }
@@ -33,7 +33,7 @@ class CompanyService {
             if (this.rolesCache.length === 0) {
                 const res = await (new RoleApi()).getAllRoles({ credentials: 'include' });
                 if (!res) {
-                    globalStore.notificationStore.show({ message: 'Failed to fetch employees roles' });
+                    globalStore.notificationStore.show({ message: 'Failed to fetch employees roles', severity:"error" });
                     return [];
                 }
                 this.rolesCache = res.names ?? [];
@@ -41,7 +41,7 @@ class CompanyService {
             return this.rolesCache ?? [];
         } catch (err) {
             console.error('[companyService][getRoles] Failed to fetch employees roles');
-            globalStore.notificationStore.show({ message: 'Failed to fetch employees roles' });
+            globalStore.notificationStore.show({ message: 'Failed to fetch employees roles', severity:"error" });
             return this.rolesCache ?? [];
         }
     }

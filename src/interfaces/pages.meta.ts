@@ -5,6 +5,7 @@ export enum PagesUrl {
     // *******  Welcome pages ******* //
     Login = '/login',
     Signup = '/signup',
+    ForgetPassword = '/forgetpassword',
 
     // *******  Manager pages ******* //
     Arrangement = '/arrangement',
