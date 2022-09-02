@@ -88,27 +88,7 @@ const getRoles = async (): Promise<string[]> => {
     }
 }
 
-const generatePasswordToEmp = async (employee: string, employees: EmployeeDTO[], setValueGeneratePassword: React.Dispatch<React.SetStateAction<string>>): Promise<void> => {
-    try{
-        // POST REQUEST
-        var employeeId: string | undefined = "none";
-        employees.map(emp => {
-            if(emp.fullName === employee)
-                employeeId = emp.id;});
-        if(employeeId === "none")
-        {
-            console.log(`failed to generate password to employee. Emoployee name ${employee} not valid`)
-        }
-        else{
-            const res = await (new SettingsApi().generatePasswordForEmp(employeeId, { credentials: 'include' }));
-            setValueGeneratePassword("Password: " + res.newPassword);
-            console.log(res.message);
-            //need to send somehome to the employee his new password
-        }
-    }catch (err) {
-        console.log(`failed to generate password to employee ${employee}`);
-    }
-}
+
 
 const deleteRoleForEmp = async (employee: EmployeeDTO, role: string, employees: EmployeeDTO[], setEmployees: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>, 
     tableRows: EmployeeDTO[], setTableRows: React.Dispatch<React.SetStateAction<EmployeeDTO[]>>): Promise<void> => {
@@ -448,7 +428,6 @@ export const EmployeesPage = observer(() => {
     const [valueLastNameEmp, setValueLastNameEmp] = React.useState("");
     const [valueEmailEmp, setValueEmailEmp] = React.useState("");
     const [valueAddRoleToEmp, setValueAddRoleToEmp] = React.useState("");
-    const [valueGeneratePassword, setValueGeneratePassword] = React.useState("");
     const [valueNewRole, setValueNewRole] = React.useState("");
     const [roleSelectKey, setRoleSelectKey] = React.useState(0);
     const [valueRoles, setValueRoles] = React.useState<string[]>([]);
@@ -866,11 +845,10 @@ export const EmployeesPage = observer(() => {
             requestSearchEmp(valuesearchedEmp);
 
             clearComponentsAfterAddNewEmp();
-    
+            //we dont need to get the password
             console.log(res.message);
-            console.log("The password for the employee is: " + res.tmpPassword);
             globalStore.notificationStore.show({ message: res.message || "**error**", severity:"success" });
-            //need to send somehome to the employee his new password
+            //we need to send an email to the employee for sign in to the system
         } catch (err) {
             console.log('failed to set employee');
             globalStore.notificationStore.show({ message: "failed to set employee", severity:"error" });
