@@ -58,6 +58,19 @@ export const ForgetPasswordPage = observer(() => {
         setValueEmailEmp(e.target.value);
     };
 
+    const generatePasswordToUser = async (userEmail: string): Promise<void> => {
+        try{
+            // POST REQUEST           
+            const res = await (new SettingsApi().generatePasswordForEmp(userEmail, { credentials: 'include' }));
+            //we dont need to get the password and we dont need to send id of employee
+            //res.newPassword
+            console.log(res.message);
+            //need to send an email to the user that contain his new password
+        }catch (err) {
+            console.log(`Failed to generate password to User with email: ${userEmail}`);
+        }
+    }
+
      return (<>
          <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
             <div style={{marginBottom: "10px"}}>
