@@ -184,11 +184,21 @@ export const PublishPage = observer(() => {
             setTimeout(checkForProgress, 500);
         }
         else{
+            let mapCond2CurrVal = new Map<string, number>([
+                ["GenerationCount", res.generationNumber || 0],
+                ["TargetFitness", res.fitness || 0],
+                ["ElapsedTime", res.elapsedTime || 0]
+            ]);
+
+            mapCond2isInclude.forEach((value: Boolean, key: string) => {
+                if(value)
+                    setprogressBarWrapper(key, mapCond2CurrVal.get(key) || 0);
+            });
             let flag = false;
             mapCond2MaxVal.forEach((value: number, key: string) => {
                 if(value == mapCond2Val.get(key))
                     flag =true;            
-            });
+            });            
 
             if(!flag)
                 setStagnationStatus("End with Stagnation!");
@@ -203,15 +213,17 @@ export const PublishPage = observer(() => {
 
     useEffect(() => {
         fetchRoles();
-
+        
         evolutionStore.termConds.map((termCond: EvolutionaryOperatorDTO) => {
             let displayName: string = mapCond2DisplayName.get(termCond.type ?? "*error*") ?? "*error*";
             mapCond2MaxVal.set(termCond.type ?? "*error*", termCond.params[displayName]);
             mapCond2isInclude.set(termCond.type ?? "*error*", true);
         });
-
-        if(evolutionService.getIsSolving())
+        
+        if (evolutionService.getIsSolving()) {
             checkForProgress();
+        }
+        evolutionService.setIsSolving(false);
     }, []);
 
     if (status !== ComponentStatus.READY) {
@@ -222,7 +234,9 @@ export const PublishPage = observer(() => {
         <Paper sx={{ margin: "auto", overflow: "hidden" }}>
 
             <Label>Term Conditions Status</Label>
-            {evolutionStore.termConds.filter(termCond => termCond.type !== '').map((termCond: EvolutionaryOperatorDTO) => {
+            {evolutionStore.termConds
+            .filter(termCond => termCond.type !== '' && termCond.type !== 'Stagnation')
+            .map((termCond: EvolutionaryOperatorDTO) => {
                 return (<TermCondProgressBar
                     title={termCond.type ?? "*error*"}
                     map={mapCond2ProgressVal}

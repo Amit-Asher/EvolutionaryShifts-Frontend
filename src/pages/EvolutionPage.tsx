@@ -17,8 +17,7 @@ import { ConfigurationPanel, ControlFactory, ValueOfSchemaParam } from '../compo
 enum SchemaFamilyType {
     Mutations = 'mutations',
     Crossovers = 'crossovers',
-    Selections = 'selections',
-    TermConds = 'term_conds'
+    Selections = 'selections',TermConds = 'term_conds'
 }
 
 export const EvolutionPage = observer(() => {
