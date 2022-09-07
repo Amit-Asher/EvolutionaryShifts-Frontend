@@ -21,12 +21,12 @@ export interface ReqSlotCell {
 }
 
 function TimeTable(props: TimeTableProps) {    
-    console.log(`props.slots: ${JSON.stringify(props.slots, undefined, 2)}`)
+    console.log(`props.slots: ${JSON.stringify(props?.slots, undefined, 2)}`)
     
   return (
       <DevExpressTimeTable
-        views={props.views ?? []}
-        slots={props.slots ?? []}
+        views={props?.views ?? []}
+        slots={props?.slots ?? []}
         setSlots={props?.setSlots}
         onSelectAppointment={props?.onSelectAppointment}
       />

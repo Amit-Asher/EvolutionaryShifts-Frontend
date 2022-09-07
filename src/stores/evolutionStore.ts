@@ -1,5 +1,5 @@
 import { NotificationStore } from './notificationStore';
-import { AlgorithmConfigDTO, EvolutionaryOperatorDTO } from './../swagger/stubs/api';
+import { AlgorithmConfigDTO, EvolutionaryOperatorDTO, SchemaFamilyDTO } from './../swagger/stubs/api';
 import { action, computed, makeAutoObservable, observable } from "mobx"
 
 // holds all the state related to create new arrangement flow
@@ -32,10 +32,10 @@ export class EvolutionStore {
     }];
 
     @observable
-    public elitism: number = 0;
+    public elitism: number = 5;
 
     @observable
-    public populationSize: number = 0;
+    public populationSize: number = 100;
 
 
     constructor(notificationStore: NotificationStore) {
@@ -115,6 +115,102 @@ export class EvolutionStore {
 
         this.termConds[idx] = { type, params };
         console.log(`this.termConds: ${JSON.stringify(this.termConds, undefined, 2)}`)
+    }
+
+    @action
+    public clearAllSettings() {
+        this.crossover = {
+            type: '',
+            params: {}
+        };
+        this.mutations = [{
+            type: '',
+            params: {}
+        }];
+        this.termConds = [{
+            type: '',
+            params: {}
+        }];
+        this.populationSize = 0;
+        this.elitism = 0;
+    }
+
+    @action
+    public setPredefinedSettings(allSchemas: SchemaFamilyDTO[]) {
+        // clear all previous settings
+        this.crossover = {
+            type: '',
+            params: {}
+        };
+        this.mutations = [{
+            type: '',
+            params: {}
+        }];
+        this.termConds = [{
+            type: '',
+            params: {}
+        }];
+
+        this.populationSize = 100;
+        this.elitism = 5;
+
+        const truncationSelection = allSchemas.find(schema => schema?.family === 'selections')?.schemas?.find(schema => schema?.name === 'TruncationSelection');
+        if (truncationSelection) {
+            this.selection = {
+                type: truncationSelection.name ?? '',
+                params: {
+                    ratio: 0.7
+                }
+            }
+        }
+
+        const basicCrossover = allSchemas.find(schema => schema?.family === 'crossovers')?.schemas?.find(schema => schema?.name === 'BasicCrossover');
+        if (basicCrossover) {
+            this.crossover = {
+                type: basicCrossover.name ?? '',
+                params: {
+                    crossoverPoints: 3
+                }
+            }
+        }
+
+        const mutationDupsByEmployee = allSchemas.find(schema => schema?.family === 'mutations')?.schemas?.find(schema => schema?.name === 'MutationDupsByEmployee');
+        const mutationSwapEmployees = allSchemas.find(schema => schema?.family === 'mutations')?.schemas?.find(schema => schema?.name === 'MutationSwapEmployees');
+        const mutationGenerateEmployee = allSchemas.find(schema => schema?.family === 'mutations')?.schemas?.find(schema => schema?.name === 'MutationGenerateEmployee');
+        if (mutationDupsByEmployee) {
+            this.mutations[0] = {
+                type: mutationDupsByEmployee.name ?? '',
+                params: {}
+            };
+        }
+        if (mutationSwapEmployees) {
+            this.mutations[1] = {
+                type: mutationSwapEmployees.name ?? '',
+                params: {
+                    probability: 0.7,
+                    numberOfShiftsToChange: 3
+                }
+            };
+        }
+        if (mutationGenerateEmployee) {
+            this.mutations[2] = {
+                type: mutationGenerateEmployee.name ?? '',
+                params: {
+                    probability: 0.6,
+                    numberOfShiftsToChange: 3
+                }
+            };
+        }
+
+        const generationCount = allSchemas.find(schema => schema?.family === 'term_conds')?.schemas?.find(schema => schema?.name === 'GenerationCount');
+        if (generationCount) {
+            this.termConds[0] = {
+                type: generationCount.name ?? '',
+                params: {
+                    count: 500
+                }
+            };
+        }
     }
 
     @computed

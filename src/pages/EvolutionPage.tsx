@@ -14,87 +14,6 @@ import { useEffect, useState } from 'react';
 import { LoadingPaper } from '../components/Loading/LoadingPaper';
 import { ConfigurationPanel, ControlFactory, ValueOfSchemaParam } from '../components/ConfigurationPanel/ConfigurationPanel';
 
-const supportedSelections: EvolutionaryOperatorDTO[] = [
-    {
-        type: 'TournamentSelection',
-        params: [
-            {
-                type: "number",
-                name: "probability"
-            },
-            // {
-            //     type: "boolean",
-            //     name: "boolean test"
-            // },
-            // {
-            //     type: "string",
-            //     name: "string test"
-            // }
-        ]
-    }
-]
-
-const supportedCrossovers: EvolutionaryOperatorDTO[] = [
-    {
-        type: 'BasicCrossover',
-        params: [
-            {
-                type: "number",
-                name: "crossoverPoints"
-            },
-            // {
-            //     type: "boolean",
-            //     name: "boolean test"
-            // },
-            // {
-            //     type: "string",
-            //     name: "string test"
-            // }
-        ]
-    }
-]
-
-const supportedMutations: EvolutionaryOperatorDTO[] = [
-    {
-        type: 'MutationByEmployee',
-        params: [
-            {
-                type: "number",
-                name: "probability"
-            },
-            // {
-            //     type: "boolean",
-            //     name: "boolean test"
-            // },
-            // {
-            //     type: "string",
-            //     name: "string test"
-            // }
-        ]
-    }
-]
-
-const supportedTermConds: EvolutionaryOperatorDTO[] = [
-    {
-        type: 'GenerationCount',
-        params: [
-            {
-                type: "number",
-                name: "count"
-            },
-            // {
-            //     type: "boolean",
-            //     name: "boolean test"
-            // },
-            // {
-            //     type: "string",
-            //     name: "string test"
-            // }
-        ]
-    }
-]
-
-
 enum SchemaFamilyType {
     Mutations = 'mutations',
     Crossovers = 'crossovers',
@@ -112,7 +31,8 @@ export const EvolutionPage = observer(() => {
     useEffect(() => {
         const fetchSchemas = async () => {
             const allSchemas = await evolutionService.getSchemas();
-            setSchemas(allSchemas);
+            setSchemas(allSchemas); // locally in component
+            evolutionStore.setPredefinedSettings(allSchemas); // set in store
             setStatus(ComponentStatus.READY);
         }
 

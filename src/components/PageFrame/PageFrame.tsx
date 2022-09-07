@@ -18,7 +18,7 @@ export const PageFrame = observer((props: PageBaseProps) => {
             <Header subTabs={props.subtabs} />
 
             {/* ********* MAIN BODY ***********  */}
-            <Box component="main" sx={{ flex: 1, py: 6, px: 4, bgcolor: "#eaeff1" }}>
+            <Box component="main" sx={{ flex: 1, py: 4, px: 4, bgcolor: "#eaeff1" }} style={{ paddingBottom: '0px' }}>
                 {<props.pageComponent />}
             </Box>
 

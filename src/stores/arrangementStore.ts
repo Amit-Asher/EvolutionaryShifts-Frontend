@@ -1,7 +1,8 @@
 import { ReqSlotCell } from './../components/TimeTable/TimeTable';
 import { action, computed, makeAutoObservable, makeObservable, observable, set, toJS } from "mobx"
 import moment from 'moment';
-import { PropertiesDTO, ReqSlotDTO, RuleWeightDTO } from '../swagger/stubs';
+import { PropertiesDTO, ReqSlotDTO, RuleWeightDTO, SchemaDTO, SchemaFamilyDTO } from '../swagger/stubs';
+import { arrangementService } from '../services/arrangementService';
 
 interface RuleSelection {
     ruleName: string;
@@ -21,8 +22,27 @@ export class ArrangementStore {
     @observable
     public selectedRules: RuleSelection[] = [];
 
+    @observable
+    public isInitialized: boolean = false;
+
     constructor() {
-        makeAutoObservable(this, {}, { autoBind: true })
+        makeAutoObservable(this, {}, { autoBind: true });
+    }
+
+    @action
+    public async initialize() {
+        const allRules: SchemaFamilyDTO = await arrangementService.getRulesOptions();
+        allRules.schemas?.forEach((schema: SchemaDTO) => {
+            if (!schema?.name) {
+                return;
+            }
+            this.selectedRules.push({
+                ruleName: schema.name,
+                weight: 0,
+                enable: false
+            })
+        })
+        this.isInitialized = true;
     }
 
     @action
@@ -92,6 +112,7 @@ export class ArrangementStore {
 
         const selectedRule = this.selectedRules?.find(selectedRule => selectedRule.ruleName === rule);
         if (selectedRule) { // rule found
+            selectedRule.weight = 0;
             selectedRule.enable = false;
         }
         console.log(`this.selectedRules: ${JSON.stringify(this.selectedRules, undefined, 2)}`)
@@ -125,5 +146,12 @@ export class ArrangementStore {
             activeEmployeesIds: this.activeEmployeesIds,
             reqSlots: reqSlotsDto
         };
+    }
+
+    @computed
+    public get sumOfRulesWeights(): number {
+        return this.selectedRules.reduce((curSum: number, rule: RuleSelection) => {
+            return rule.enable ? curSum + rule.weight : curSum;
+        }, 0);
     }
 }

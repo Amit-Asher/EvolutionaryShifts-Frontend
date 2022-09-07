@@ -6,7 +6,9 @@ import {
     ListItemButton,
     ListItemText,
     Paper,
+    Slider,
     TextField,
+    Tooltip,
 } from "@mui/material";
 import { ArrangementStore } from "../stores/arrangementStore";
 import { globalStore } from "../stores/globalStore";
@@ -22,6 +24,9 @@ import { LoadingPaper } from "../components/Loading/LoadingPaper";
 import { arrangementService } from "../services/arrangementService";
 import { useNavigate } from 'react-router-dom';
 import { PagesUrl } from "../interfaces/pages.meta";
+import InfoIcon from '@mui/icons-material/Info';
+import { mapRuleToDisplayDetails } from "../interfaces/arrangement.interfaces";
+import { Divider } from '@mui/material';
 
 enum NewArgmtSubTab {
     Slots,
@@ -53,13 +58,18 @@ export const NewArrangementPage = observer(() => {
         fetchRoles();
     }, []);
 
-    if (status !== ComponentStatus.READY) {
+    useEffect(() => {
+        console.log(`arrangementStore.isInitialized: ${JSON.stringify(arrangementStore.isInitialized, undefined, 2)}`);
+    }, [arrangementStore.isInitialized])
+
+    if (status !== ComponentStatus.READY || !arrangementStore.isInitialized) {
+        // if (true) {
         return <LoadingPaper />;
     }
 
     const getSlotsTab = () => {
-        return <div>
-            <div style={{ backgroundColor: "#fff", padding: "20px" }}>
+        return <div className="transform-time-table" style={{ height: '100%' }}>
+            <div style={{ backgroundColor: "#fff", padding: "20px", height: '100%' }}>
                 <TimeTable
                     views={allRoles}
                     slots={arrangementStore.reqSlots}
@@ -145,24 +155,13 @@ export const NewArrangementPage = observer(() => {
     const getRulesTab = () => {
         return <div style={{ width: '100%', height: '100%', backgroundColor: '#fff' }}>
             {/* TITLE */}
-            <div
-                style={{
-                    width: "100%",
-                    justifyContent: "center",
-                    display: "flex",
-                    paddingTop: '20px'
-                }}
-            >
-                <Typography variant="h6" gutterBottom component="div">
-                    Rules
-                </Typography>
-            </div>
+            <Divider textAlign="left" style={{ padding: '37px 0px 8px 30px', width: '620px' }}>Rules</Divider>   
             {/* RULE WEIGHTS */}
-            <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }} style={{ height: '80%'}}>
+            <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }} style={{ height: '70%', padding: '0px 20px' }}>
                 {allRules?.schemas?.map((rule: SchemaDTO) => {
                     const labelId = `rule-${rule?.name}`;
                     return (
-                        <ListItem key={rule?.name} disablePadding style={{ width: '450px', paddingTop: '10px' }}>
+                        <ListItem key={rule?.name} disablePadding style={{ width: '600px', paddingTop: '10px' }}>
                             <Checkbox
                                 onChange={(enable) =>
                                     enable.target.checked
@@ -170,25 +169,41 @@ export const NewArrangementPage = observer(() => {
                                         : arrangementStore.disableRule(rule?.name)
                                 }
                                 checked={arrangementStore.selectedRules.some(
-                                    (selectedRule) =>
-                                        selectedRule.ruleName === rule?.name && selectedRule.enable
+                                    (selectedRule) => selectedRule.ruleName === rule?.name && selectedRule.enable
                                 )}
                             />
-                            <ListItemText id={labelId} primary={`${rule?.name}`} />
-                            <TextField
-                                type="number"
-                                value={
-                                    arrangementStore.selectedRules.find(
-                                        (selectedRule) => selectedRule.ruleName === rule?.name
-                                    )?.weight || undefined
-                                }
-                                variant="outlined"
-                                onChange={(e) =>
-                                    arrangementStore.setRuleWeight(
-                                        rule?.name,
-                                        parseFloat(e.target.value)
-                                    )
-                                }
+                            {/* <ListItemText
+                                id={labelId}
+                                primary={`${rule?.name}`}
+                                style={{ width: '300px' }}
+                            /> */}
+                            <div style={{ width: '500px' }}>
+                                {mapRuleToDisplayDetails[rule?.name ?? '']?.label ?? 'unknown'}
+                                <Tooltip
+                                    title={<Typography fontSize={15}>{mapRuleToDisplayDetails[rule?.name ?? 0]?.description ?? ''}</Typography>}
+                                    placement={'bottom-start'}
+                                >
+                                    <InfoIcon style={{ width: '15px', height: '15px', marginLeft: '10px' }} />
+                                </Tooltip>
+                            </div>
+                            <Slider
+                                size="small"
+                                value={arrangementStore.selectedRules.find(validRule => validRule.ruleName === rule.name)?.weight ?? 0}
+                                step={0.01}
+                                aria-label="Small"
+                                valueLabelDisplay="auto"
+                                min={0}
+                                max={1}
+                                onChange={(e: any) => {
+                                    const curRuleWeight = arrangementStore.selectedRules.find(r => r.ruleName === rule.name)?.weight;
+                                    if (curRuleWeight === undefined) {
+                                        return;
+                                    }
+                                    const handleLimit: boolean = arrangementStore.sumOfRulesWeights - curRuleWeight + e.target.value <= 1;
+                                    if (handleLimit) {
+                                        arrangementStore.setRuleWeight(rule.name, e.target.value);
+                                    }
+                                }}
                             />
                         </ListItem>
                     );
@@ -198,8 +213,8 @@ export const NewArrangementPage = observer(() => {
             <div style={{ display: "flex", float: "right", padding: "40px" }}>
                 <Button
                     variant="contained"
-                    color="secondary"
                     style={{ height: "50px", width: "100px" }}
+                    disabled={arrangementStore.sumOfRulesWeights != 1}
                     onClick={() => {
                         arrangementService.sendProperties(arrangementStore.properties);
                         navigate(PagesUrl.Arrangement_Status);
@@ -208,10 +223,46 @@ export const NewArrangementPage = observer(() => {
                     Create
                 </Button>
             </div>
-        </div>
+        </div >
+    }
+
+    const getGettingStarted = () => {
+        return <div style={{ width: '100%', height: '100%', backgroundColor: '#fff' }}>
+            {/* TITLE */}
+            <div
+                style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    display: "flex",
+                    padding: '20px',
+                    height: '80%',
+                    alignItems: 'center'
+                }}
+            >
+                <div>
+                    <div style={{ alignItems: 'center', width: '100%', textAlign: 'center', color: 'rgba(0, 0, 0, 0.6)' }}><h2>Get started with Evolutionary Shifts Today!</h2></div>
+                    <div style={{ alignItems: 'center', width: '100%', textAlign: 'center', color: '#797A7E' }}><h4>First, let's define your company roles and employees</h4></div>
+                    {/* CREATE BUTTON */}
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '25px' }}>
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                navigate(PagesUrl.Employees);
+                            }}
+                        >
+                            Getting Started
+                        </Button>
+                    </div>
+                </div>
+            </div >
+        </div>;
     }
 
     const getCurrentTab = () => {
+        if (allEmployees.length === 0) {
+            return getGettingStarted();
+        }
+
         switch (currentTab) {
             case NewArgmtSubTab.Slots:
                 return getSlotsTab();
@@ -226,14 +277,26 @@ export const NewArrangementPage = observer(() => {
     }
 
     return (<>
-        <div style={{ width: '100%', height: '740px', display: 'flex' }}>
-            <div style={{ width: '20%', height: '100%', backgroundColor: '#fff' }}>
-                <div style={{ width: '100%', color: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', display: 'flex' }}><h3>Settings</h3></div>
-                <div><Button style={{ width: '100%', paddingTop: '10px' }} onClick={() => setCurrentTab(NewArgmtSubTab.Slots)}>Slots</Button></div>
-                <div><Button style={{ width: '100%', paddingTop: '10px' }} onClick={() => setCurrentTab(NewArgmtSubTab.Employees)}>Employees</Button></div>
-                <div><Button style={{ width: '100%', paddingTop: '10px' }} onClick={() => setCurrentTab(NewArgmtSubTab.Rules)}>Rules</Button></div>
+        <div style={{
+            width: '100%',
+            height: '600px',
+            display: 'flex'
+        }}>
+            <div style={{
+                width: '20%', height: '100%', backgroundColor: '#fff', marginRight: '10px ', boxShadow: '0px 2px 1px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)',
+                borderRadius: '8px',
+                transition: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms'
+            }}>
+                <div style={{ width: '100%', color: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', display: 'flex' }}><h3>Properties</h3></div>
+                <div><Button style={{ width: '100%', paddingTop: '10px', borderRadius: '0px', backgroundColor: currentTab === NewArgmtSubTab.Slots ? '#EFF8FF' : '' }} onClick={() => setCurrentTab(NewArgmtSubTab.Slots)}>Slots</Button></div>
+                <div><Button style={{ width: '100%', paddingTop: '10px', borderRadius: '0px', backgroundColor: currentTab === NewArgmtSubTab.Employees ? '#EFF8FF' : '' }} onClick={() => setCurrentTab(NewArgmtSubTab.Employees)}>Employees</Button></div>
+                <div><Button style={{ width: '100%', paddingTop: '10px', borderRadius: '0px', backgroundColor: currentTab === NewArgmtSubTab.Rules ? '#EFF8FF' : '' }} onClick={() => setCurrentTab(NewArgmtSubTab.Rules)}>Rules</Button></div>
             </div>
-            <div style={{ width: '80%', height: '100%' }}>
+            <div style={{
+                width: '80%', height: '100%', overflow: 'hidden', boxShadow: '0px 2px 1px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)',
+                borderRadius: '8px',
+                transition: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms'
+            }}>
                 {getCurrentTab()}
             </div>
         </div>

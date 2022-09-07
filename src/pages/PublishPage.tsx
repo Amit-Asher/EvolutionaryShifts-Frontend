@@ -21,7 +21,7 @@ const Label = styled('label')`
 const publishArrangement = async (): Promise<void> => {
     try {
         // POST REQUEST
-        const res = await (new PublishApi()).publishArrangement();
+        const res = await (new PublishApi()).publishArrangement({ credentials: 'include' });
         console.log(res.message);
         globalStore.notificationStore.show({ message: res.message || "**error**", severity:"success" });
     } catch (err) {
@@ -32,7 +32,7 @@ const publishArrangement = async (): Promise<void> => {
 const getSolution = async (setFitness: React.Dispatch<React.SetStateAction<string>>, setGenerationNumber: React.Dispatch<React.SetStateAction<string>>): Promise<ShiftDTO[]> => {
     try {
         // GET REQUEST
-        const res: EvolutionStatusDTO = await (new EvolutionApi()).getSolution();
+        const res: EvolutionStatusDTO = await (new EvolutionApi()).getSolution({ credentials: 'include' });
         const arrangement: ShiftDTO[] = res.arrangement || [];
         setFitness("Fitness: ".concat(res.fitness?.toString() || ""));
         setGenerationNumber("Generation Number: ".concat(res.generationNumber?.toString() || " "));

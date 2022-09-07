@@ -50,7 +50,7 @@ const StyledLinearProgress = styled(LinearProgress)(() => ({
 
 const TextEditor = (props) => {
     // eslint-disable-next-line react/destructuring-assignment
-    if (props.type === "multilineTextEditor") {
+    if (props?.type === "multilineTextEditor") {
         return null;
     }
     return <AppointmentForm.TextEditor {...props} />;
@@ -128,24 +128,23 @@ const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) => {
 };
 
 export default (props) => {
-    const [currentViewName, setCurrentViewName] = useState(props?.views[0] ?? '');
+    const [currentViewName, setCurrentViewName] = useState(props?.views?.[0] ?? {});
     const [currentDate, setCurrentDate] = useState(moment('2022-05-22').format("YYYY-MM-DD"));
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        props?.setSlots?.([]); // set outside
-    }, []);
-
-    useEffect(() => {
-        setCurrentViewName(props?.views[0] ?? '');
-    }, [props.views])
+        setCurrentViewName(props?.views?.[0] ?? {});
+    }, [props?.views])
 
     // only relevent for the flow of new arrangement (set reqslots)
     const commitChanges = ({ added, changed, deleted }) => {
         if (added) {
-            const startingAddedId = props.slots.length > 0 ? props.slots[props.slots.length - 1].id + 1 : 0;
+            if (props?.slots?.length === undefined) {
+                return;
+            }
+            const startingAddedId = props?.slots?.length > 0 ? (props?.slots?.[props.slots.length - 1]?.id ?? 0) + 1 : 0;
             const newData = [
-                ...props.slots,
+                ...props?.slots,
                 {
                     ...added,
                     id: startingAddedId,
@@ -157,7 +156,7 @@ export default (props) => {
             return;
         }
         if (changed) {
-            const newData = props.slots.map((appointment) =>
+            const newData = props?.slots.map((appointment) =>
                 changed[appointment.id]
                     ? { ...appointment, ...changed[appointment.id] }
                     : appointment
@@ -166,7 +165,7 @@ export default (props) => {
             return;
         }
         if (deleted !== undefined) {
-            const newData = props.slots.filter((appointment) => appointment.id !== deleted);
+            const newData = props?.slots?.filter((appointment) => appointment.id !== deleted);
             props?.setSlots?.(newData);
             return;
         }
@@ -175,22 +174,23 @@ export default (props) => {
     const CustomAppointment = (CustomAppointmentProps) => {
         return (
             <Appointments.Appointment
-                onClick={props.onSelectAppointment ? (event) => {
-                    props.onSelectAppointment(CustomAppointmentProps?.data, CustomAppointmentProps?.data?.isSelected)
+                onClick={props?.onSelectAppointment ? (event) => {
+                    props?.onSelectAppointment(CustomAppointmentProps?.data, CustomAppointmentProps?.data?.isSelected)
                 } : undefined}
                 style={{
                     backgroundColor: CustomAppointmentProps?.data?.isSelected ? '#2e7d32' : ''
                 }}
             >
-                {CustomAppointmentProps.children}
+                {CustomAppointmentProps?.children}
             </Appointments.Appointment>
         );
     }
 
     return (
         <Scheduler
-            data={props.slots.filter((slot) => slot.role === currentViewName)}
-            height={700}
+            data={props?.slots?.filter((slot) => slot.role === currentViewName) ?? []}
+            // height={600}
+            style={{ marginTop: '30px' }}
         >
             <ViewState
                 currentDate={currentDate}
@@ -207,16 +207,16 @@ export default (props) => {
                     displayName={viewName}
                     startDayHour={0}
                     endDayHour={24}
-                    cellDuration={120}
+                    cellDuration={180}
                 />
             ))}
 
-            {props.onSelectAppointment && <Appointments appointmentComponent={CustomAppointment} />}
-            {!props.onSelectAppointment && <Appointments />}
+            {props?.onSelectAppointment && <Appointments appointmentComponent={CustomAppointment} />}
+            {!props?.onSelectAppointment && <Appointments />}
 
             <Toolbar {...(loading ? { rootComponent: ToolbarWithLoading } : null)} />
             <DateNavigator />
-            {!props.onSelectAppointment && <AppointmentTooltip
+            {!props?.onSelectAppointment && <AppointmentTooltip
                 showCloseButton
                 showOpenButton={props?.setSlots ? true : false}
                 showDeleteButton={props?.setSlots ? true : false}

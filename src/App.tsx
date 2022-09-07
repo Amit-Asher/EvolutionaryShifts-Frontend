@@ -3,19 +3,20 @@ import Portal from "./portal";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Notification } from "./components/Snackbar/Notification";
 import { BrowserRouter, useLocation } from 'react-router-dom';
+import { useEffect } from "react";
 
-function App() {    
-  return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <BrowserRouter>
-        <div className="App">
-          {/* TODO: ADD REGISTRATION PAGES */}
-          <Portal />
-        </div>
-        <Notification />
-      </BrowserRouter>
-    </LocalizationProvider>
-  );
+function App() {
+    return (
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <BrowserRouter>
+                <div className="App">
+                    {/* TODO: ADD REGISTRATION PAGES */}
+                    <Portal />
+                </div>
+                <Notification />
+            </BrowserRouter>
+        </LocalizationProvider>
+    );
 }
 
 export default App;

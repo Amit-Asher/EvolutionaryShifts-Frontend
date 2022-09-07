@@ -1,3 +1,11 @@
 .css-btxns4-MuiPaper-root-MuiDrawer-paper {
     background-color: #fff !important;
 }
+
+.transform-time-table {
+    transform: scaleY(1);
+}
+
+.css-3jmy1j {
+    margin-top: 30px;
+}

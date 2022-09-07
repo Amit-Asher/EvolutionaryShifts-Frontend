@@ -1,4 +1,6 @@
-import { LoginApi } from './../swagger/stubs/api';
+import { globalStore } from './../stores/globalStore';
+import { LoginApi, SchemaDTO, SchemaFamilyDTO } from './../swagger/stubs/api';
+import { arrangementService } from './arrangementService';
 
 export namespace loginService {
 
@@ -14,6 +16,7 @@ export namespace loginService {
                 throw new Error("Failed to login");
             }
             keepAlive();
+            await globalStore.arrangementStore.initialize();
         } catch (err) {
             console.error('Failed to login');
             throw err;
@@ -79,6 +82,7 @@ export namespace loginService {
                 throw new Error("Failed to login");
             }
             keepAlive();
+            await globalStore.arrangementStore.initialize();
         } catch (err) {
             console.error('Failed to login');
             throw err;
@@ -89,6 +93,6 @@ export namespace loginService {
         setTimeout(async () => {
             (new LoginApi).keepAlive({ credentials: 'include' });
             keepAlive(); // loop forever. (note that this is not on stack)
-        }, 1000 * 60 * 3); // every 3 minutes (token invalidation occur on 5 minutes)
+        }, 1000 * 60); // every 1 minutes (token invalidation occur on 5 minutes)
     }
 }

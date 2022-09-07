@@ -43,7 +43,6 @@ import { FormControlUnstyledContext } from '@mui/base';
 import { isGenerator } from 'mobx/dist/internal';
 import { companyService } from '../services/companyService';
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
-import SearchBar from "material-ui-search-bar";
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { globalStore } from '../stores/globalStore';
 
@@ -477,10 +476,10 @@ export const EmployeesPage = observer(() => {
                 >Add New Role
                 </Button>      
                 </div>
-                <SearchBar 
+                {/* <SearchBar 
                     value={valuesearcheRole}
-                    onChange={(searchVal) => {requestSearchRole(searchVal)}}
-                    onCancelSearch={() => cancelSearchRole()}/>
+                    onChange={(searchVal: any) => {requestSearchRole(searchVal)}}
+                    onCancelSearch={() => cancelSearchRole()}/> */}
                 <RolesList></RolesList>
             </div>);
     }
@@ -580,10 +579,10 @@ export const EmployeesPage = observer(() => {
                 >Add Employee
                 </Button>
                 </div>
-                <SearchBar 
+                {/* <SearchBar 
                 value={valuesearchedEmp}
-                onChange={(searchVal) => {requestSearchEmp(searchVal)}}
-                onCancelSearch={() => cancelSearchEmp()}/>
+                onChange={(searchVal: any) => {requestSearchEmp(searchVal)}}
+                onCancelSearch={() => cancelSearchEmp()}/> */}
                 <EnhancedTableToolbar
                 selectedEmpToRemove={selectedEmpToRemove}
                 employees={employees} 
