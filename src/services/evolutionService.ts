@@ -4,12 +4,21 @@ import { EmployeeDTO, RoleDTO, CompanyApi, EmployeeApi, RoleApi, EvolutionApi, A
 class EvolutionService {
 
     schemasCache: SchemaFamilyDTO[] = [];
+    
+    isSolving: Boolean = true;//need to be false!!!
+
 
     constructor() {
     }
 
+    public getIsSolving(): Boolean{
+        return this.isSolving;
+    }
+
+    
     public async solveArrangement(algorithmConfig: AlgorithmConfigDTO): Promise<void> {
         try {
+            
             globalStore.notificationStore.show({ message: 'Start solving arrangement...', severity:"success" });
             const res = await (new EvolutionApi()).solveArrangement(algorithmConfig, { credentials: 'include' });
             if (!res.success) {
@@ -17,6 +26,7 @@ class EvolutionService {
                 return;
             }
 
+            this.isSolving = true;
             globalStore.notificationStore.show({ message: 'Solving arrangement started successfully!', severity:"success" });
         } catch (err) {
             globalStore.notificationStore.show({ message: 'Failed to start solving arrangement', severity:"error" });
