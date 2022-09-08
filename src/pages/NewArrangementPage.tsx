@@ -27,6 +27,7 @@ import { PagesUrl } from "../interfaces/pages.meta";
 import InfoIcon from '@mui/icons-material/Info';
 import { mapRuleToDisplayDetails } from "../interfaces/arrangement.interfaces";
 import { Divider } from '@mui/material';
+import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 
 enum NewArgmtSubTab {
     Slots,
@@ -102,60 +103,51 @@ export const NewArrangementPage = observer(() => {
                         Active Employees
                     </Typography>
                 </div>
-                <List
-                    sx={{
-                        width: "100%",
-                        bgcolor: "background.paper",
-                        borderRight: "inset",
-                        height: "100%",
-                        maxHeight: '630px',
-                        overflow: "auto",
-                    }}
-                >
-                    <ListItem disablePadding>
-                        <Checkbox
-                            onChange={(e) => {
-                                if (e.target.checked) {
-                                    allEmployees?.forEach((emp) =>
-                                        arrangementStore.setEmployeeAsActive(emp.id)
-                                    );
-                                } else {
-                                    allEmployees?.forEach((emp) =>
-                                        arrangementStore.unsetEmployeeAsActive(emp.id)
-                                    );
-                                }
-                            }}
-                        />
-                        <ListItemText primary={'Select all'} />
-                    </ListItem>
-                    {allEmployees?.map((employee: EmployeeDTO) => {
-                        const labelId = `active-employee-${employee.id}`;
-                        const isActive = arrangementStore?.activeEmployeesIds?.some(
-                            (employeeId) => employeeId === employee.id
-                        );
-                        return (
-                            <ListItem key={employee.fullName} disablePadding>
-                                <ListItemButton
-                                    onClick={() =>
-                                        isActive
-                                            ? arrangementStore.unsetEmployeeAsActive(employee.id)
-                                            : arrangementStore.setEmployeeAsActive(employee.id)
-                                    }
-                                >
-                                    <Checkbox checked={isActive} />
-                                    <ListItemText id={labelId} primary={`${employee.fullName}`} />
-                                </ListItemButton>
-                            </ListItem>
-                        );
-                    })}
-                </List>
+                <div style={{ height: 'calc(100% - 59px)', width: '100%', padding: '10px' }}>
+                    <DataGrid
+                        rows={allEmployees?.map((employee: EmployeeDTO) => {
+                            return {
+                                id: employee.id,
+                                employee: employee.fullName,
+                                phoneNnumber: employee.phoneNumber
+                            }
+                        })}
+                        columns={[
+                            { field: 'employee', headerName: 'Employee', width: 150 },
+                            { field: 'phoneNnumber', headerName: 'PhoneNnumber', width: 150 },
+                        ]}
+                        pageSize={7}
+                        rowsPerPageOptions={[5]}
+                        onCellClick={(e) => {
+                            const isActive = arrangementStore?.activeEmployeesIds?.some(
+                                (employeeId) => employeeId === e.row.id
+                            );
+                            if (isActive) {
+                                arrangementStore.unsetEmployeeAsActive(e.row.id);
+                            } else {
+                                arrangementStore.setEmployeeAsActive(e.row.id)
+                            }
+                        }}
+                        checkboxSelection       
+                        onColumnHeaderClick={(e) => {
+                            if (e.field !== '__check__') {
+                                return;
+                            }
+                            if (arrangementStore.activeEmployeesIds.length) {
+                                allEmployees.forEach(employee => arrangementStore.unsetEmployeeAsActive(employee.id));
+                            } else { // length is 0
+                                allEmployees.forEach(employee => arrangementStore.setEmployeeAsActive(employee.id));
+                            }
+                        }}                 
+                    />
+                </div>
             </div>);
     }
 
     const getRulesTab = () => {
         return <div style={{ width: '100%', height: '100%', backgroundColor: '#fff' }}>
             {/* TITLE */}
-            <Divider textAlign="left" style={{ padding: '37px 0px 8px 30px', width: '620px' }}>Rules</Divider>   
+            <Divider textAlign="left" style={{ padding: '37px 0px 8px 30px', width: '620px' }}>Rules</Divider>
             {/* RULE WEIGHTS */}
             <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }} style={{ height: '70%', padding: '0px 20px' }}>
                 {allRules?.schemas?.map((rule: SchemaDTO) => {

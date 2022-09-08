@@ -20,6 +20,8 @@ import { ComponentStatus } from "./interfaces/common";
 import { loginService } from "./services/loginService";
 import { LoadingPaper } from "./components/Loading/LoadingPaper";
 import { ForgetPasswordPage } from "./pages/ForgetPasswordPage";
+import { EmpRequestsPage } from "./pages/EmpRequestsPage";
+import { RequestsPage } from "./pages/RequestsPage";
 
 export default function Portal() {
     const navigate = useNavigate();
@@ -134,7 +136,7 @@ export default function Portal() {
                     />
                     <Route
                         path={PagesUrl.Requests}
-                        element={<PageFrame pageComponent={ComingSoonPage} subtabs={[]} />}
+                        element={<PageFrame pageComponent={RequestsPage} subtabs={[]} />}
                     />
                     <Route
                         path={PagesUrl.History}
@@ -162,6 +164,10 @@ export default function Portal() {
                     <Route
                         path={PagesUrl.Emp_Arrangement}
                         element={<PageFrame pageComponent={PublishPage} subtabs={[]} />}
+                    />
+                    <Route
+                        path={PagesUrl.Emp_Requests}
+                        element={<PageFrame pageComponent={EmpRequestsPage} subtabs={[]} />}
                     />
                 </Routes>
             </Box>

@@ -25,7 +25,7 @@ export interface RuleDisplayDetails {
 export const mapRuleToDisplayDetails: { [rule: string]: RuleDisplayDetails } = {
     [RulesTypes.RuleFight]: {
         label: "Enemies Rule",
-        description: "This is a rule that make you feel like war!"
+        description: "This is a rule that consider if one employee prefer to not work with specific employee"
     },
     [RulesTypes.RuleFitEmpRole]: {
         label: "Qualifications",
@@ -36,8 +36,8 @@ export const mapRuleToDisplayDetails: { [rule: string]: RuleDisplayDetails } = {
         description: "this rule consider two employees that want to work together."
     },
     [RulesTypes.RuleRangeWorkDays]: {
-        label: "Vacations Rule",
-        description: "This is a rule that consider the work days of the employee"
+        label: "Off days Rule",
+        description: "This is a rule that consider off days of the employee"
     },
     [RulesTypes.RuleSlots]: {
         label: "Slots (default)",

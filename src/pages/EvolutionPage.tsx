@@ -78,6 +78,7 @@ export const EvolutionPage = observer(() => {
                 margin: '30px'
             }}>
 
+                <h1 style={{ marginBottom: '40px' }}>Control Panel</h1>
                 {/* POPULATION SIZE + ELITISM */}
                 <div className='evo-mrg-bt-8'>
                     <TextField
@@ -85,6 +86,7 @@ export const EvolutionPage = observer(() => {
                         id="outlined-search"
                         label="pupolation size"
                         type="number"
+                        size="small"
                         inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                         onChange={(e) => evolutionStore.setPopulationSize(parseInt(e.target.value))}
                         style={{ minWidth: "300px", marginRight: '15px' }}
@@ -94,6 +96,7 @@ export const EvolutionPage = observer(() => {
                         id="outlined-search"
                         label="elitism"
                         type="number"
+                        size="small"
                         inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                         onChange={(e) => evolutionStore.setElitism(parseInt(e.target.value))}
                     />
@@ -110,6 +113,7 @@ export const EvolutionPage = observer(() => {
                         labelId="selection-label"
                         style={{ minWidth: "300px", marginRight: '15px' }}
                         id="demo-simple-select-helper"
+                        size="small"
                         value={evolutionStore.selection.type}
                         //label="Age" //no idea what does it do to add label need label id this doesnt add anything
                         onChange={(e) => {
@@ -142,6 +146,7 @@ export const EvolutionPage = observer(() => {
                         style={{ minWidth: "300px", marginRight: '15px' }}
                         id="demo-simple-select-helper"
                         value={evolutionStore.crossover.type}
+                        size="small"
                         //label="Age" //no idea what does it do to add label need label id this doesnt add anything
                         onChange={(e) => {
                             const schema = schemas.find(schemaFamily => schemaFamily.family === SchemaFamilyType.Crossovers)?.schemas?.find(schema => schema.name === e.target.value);
@@ -172,7 +177,7 @@ export const EvolutionPage = observer(() => {
                         variant="contained"
                         onClick={() => evolutionStore.addMutation()}
                         className='evo-mrg-bt-8'
-                        style={{ marginBottom: '10px' }}
+                        style={{ marginBottom: '20px' }}
                     >
                         Add Mutation +
                     </Button>
@@ -184,6 +189,7 @@ export const EvolutionPage = observer(() => {
                                 labelId="mutation-label"
                                 style={{ minWidth: "300px", marginRight: '15px' }}
                                 id="mutation-select"
+                                size="small"
                                 value={mutation?.type || ''}
                                 //label="Age" //no idea what does it do to add label need label id this doesnt add anything
                                 defaultValue="something" //remember to update state to defualt value
@@ -223,7 +229,7 @@ export const EvolutionPage = observer(() => {
                         variant="contained"
                         onClick={() => evolutionStore.addTermCond()}
                         className='evo-mrg-bt-8'
-                        style={{ marginBottom: '10px' }}
+                        style={{ marginBottom: '20px' }}
                     >
                         Add Termination Condition +
                     </Button>
@@ -235,6 +241,7 @@ export const EvolutionPage = observer(() => {
                                 labelId="term-conds-label"
                                 style={{ minWidth: "300px", marginRight: '15px' }}
                                 id="term-conds-select"
+                                size="small"
                                 value={termCond?.type || ''}
                                 //label="Age" //no idea what does it do to add label need label id this doesnt add anything
                                 defaultValue="something" //remember to update state to defualt value
@@ -272,7 +279,6 @@ export const EvolutionPage = observer(() => {
                     <div style={{ width: '90%' }}></div>
                     <Button
                         variant="contained"
-                        color="success"
                         style={{ height: "50px", width: "100px" }}
                         onClick={() => {
                             navigate(PagesUrl.Arrangement_Publish);
