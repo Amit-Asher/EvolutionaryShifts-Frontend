@@ -54,7 +54,7 @@ enum EmpsSubTab {
 
 
 const onlyLetters = (str: string): boolean => {
-    return /^[a-zA-Z]+$/.test(str);
+    return /^[a-zA-Z -]+$/.test(str);
   }
 
 const Label = styled('label')`
@@ -573,8 +573,38 @@ export const EmployeesPage = observer(() => {
                         console.log("Employee roles is empty");
                         globalStore.notificationStore.show({ message: "Employee roles is empty", severity:"error" });
                     }
-                    else {
-                        sendNewEmployee(newEmp);
+                    else
+                    {
+                        let isEmpValid = true;
+                        for(let i=0;i< employees.length;i++)
+                        {
+                            if(employees[i].fullName === valueFirstNameEmp.concat(" ").concat(valueLastNameEmp))
+                            {
+                                console.log("Employee full name is already exist");
+                                globalStore.notificationStore.show({ message: "Employee full name is already exist", severity:"error" });
+                                isEmpValid = false;
+                                break;
+                            }
+
+                            if(employees[i].email === valueEmailEmp)
+                            {
+                                console.log("Employee email is already exist");
+                                globalStore.notificationStore.show({ message: "Employee email is already exist", severity:"error" });
+                                isEmpValid = false;
+                                break;
+                            }
+
+                            if(employees[i].phoneNumber === phoneNumber)
+                            {
+                                console.log("Employee phone is already exist");
+                                globalStore.notificationStore.show({ message: "Employee phone is already exist", severity:"error" });
+                                isEmpValid = false;
+                                break;
+                            }
+                        }
+
+                        if(isEmpValid)
+                            sendNewEmployee(newEmp);
                     }
                 }}
                 >Add Employee
@@ -685,7 +715,7 @@ export const EmployeesPage = observer(() => {
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    // onRowsPerPageChange={handleChangeRowsPerPage}
                     />
 
 
@@ -1077,29 +1107,29 @@ export const EmployeesPage = observer(() => {
         setPage(newPage);
     };
 
-    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const number = parseInt(event.target.value, 10);
-        setRowsPerPage(number);
-        setPage(0);
+    // const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     const number = parseInt(event.target.value, 10);
+    //     setRowsPerPage(number);
+    //     setPage(0);
 
-        const e = document.getElementById("divPage");
-        if(e !== null)
-            switch(number)
-            {
-                case 5:
-                    e.style.height = "740px";
-                    break;
-                case 10:
-                    e.style.height = "870px";
-                    break;
-                case 25:
-                    e.style.height = "1230px";
-                    break;
-                default:
-                    console.log('unsupported number rows to page');
-                    break;
-            }
-    };
+    //     const e = document.getElementById("divPage");
+    //     if(e !== null)
+    //         switch(number)
+    //         {
+    //             case 5:
+    //                 e.style.height = "740px";
+    //                 break;
+    //             case 10:
+    //                 e.style.height = "870px";
+    //                 break;
+    //             case 25:
+    //                 e.style.height = "1230px";
+    //                 break;
+    //             default:
+    //                 console.log('unsupported number rows to page');
+    //                 break;
+    //         }
+    // };
 
     const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
         setDense(event.target.checked);

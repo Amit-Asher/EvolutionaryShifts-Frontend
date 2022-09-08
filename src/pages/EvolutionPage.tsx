@@ -274,9 +274,10 @@ export const EvolutionPage = observer(() => {
                         variant="contained"
                         color="success"
                         style={{ height: "50px", width: "100px" }}
-                        onClick={() => {
-                            navigate(PagesUrl.Arrangement_Publish);
-                            evolutionService.solveArrangement(evolutionStore.algorithmConfig)
+                        onClick={async () => {
+                            let flag: Boolean = await evolutionService.solveArrangement(evolutionStore.algorithmConfig);
+                            if(flag)
+                                navigate(PagesUrl.Arrangement_Publish);
                         }}
                     >
                         Start

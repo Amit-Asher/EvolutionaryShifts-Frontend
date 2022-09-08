@@ -33,6 +33,7 @@ function SnackBarNotification() {
             onClose={(e) => globalStore.notificationStore.hide()}
             action={action}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            autoHideDuration={2000}
         >
             <Alert
                 onClose={(e) => globalStore.notificationStore.hide()} 

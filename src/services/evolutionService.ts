@@ -19,21 +19,23 @@ class EvolutionService {
         this.isSolving = isSolving;
     }
     
-    public async solveArrangement(algorithmConfig: AlgorithmConfigDTO): Promise<void> {
+    public async solveArrangement(algorithmConfig: AlgorithmConfigDTO): Promise<Boolean> {
         try {
             
             globalStore.notificationStore.show({ message: 'Start solving arrangement...', severity:"success" });
-            this.isSolving = true;
             const res = await (new EvolutionApi()).solveArrangement(algorithmConfig, { credentials: 'include' });
             if (!res.success) {
                 globalStore.notificationStore.show({ message: 'Failed to start solving arrangement', severity:"error" });
-                return;
+                return false;
             }
 
+            this.isSolving = true;
             globalStore.notificationStore.show({ message: 'Solving arrangement started successfully!', severity:"success" });
+            return true;
         } catch (err) {
             globalStore.notificationStore.show({ message: 'Failed to start solving arrangement', severity:"error" });
             console.error('Failed to start solving arrangement');
+            return false;
         }
     }
 

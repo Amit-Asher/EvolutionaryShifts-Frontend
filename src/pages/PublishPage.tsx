@@ -73,7 +73,7 @@ export const PublishPage = observer(() => {
 
     const setprogressBarWrapper = (type: string, num: number) => {
         let max = mapCond2MaxVal.get(type) || -1;
-        let newVal = (num / max) * 100.0;
+        let newVal = (num / max) * 100.0;//%
 
         switch(type){
             case "GenerationCount":
@@ -87,13 +87,15 @@ export const PublishPage = observer(() => {
             case "TargetFitness":
             {
                 if (num <= max)
-                    setProgressBarFitness((num / max) * 100.0);
+                    setProgressBarFitness(newVal);
                 break;
             }
             case "ElapsedTime":
             {
                 if (num <= max)
-                    setProgressBarTimer((num / max) * 100.0);
+                    setProgressBarTimer(newVal);
+                else
+                    setProgressBarTimer(100);
                 break;
             }
         }
@@ -116,7 +118,7 @@ export const PublishPage = observer(() => {
         try {
             // GET REQUEST
             const res: EvolutionStatusDTO = await (new EvolutionApi()).getSolution({ credentials: 'include' });
-            setFitness("Fitness: ".concat(res.fitness?.toString() || ""));
+            setFitness("Fitness: ".concat(res.fitness?.toFixed(3).toString() || ""));
             setGenerationNumber("Generation Number: ".concat(res.generationNumber?.toString() || " "));
             // notificationStore.show({ message: "Success to get evolution status", severity: "success" });
             return res;
@@ -165,38 +167,32 @@ export const PublishPage = observer(() => {
         }
     }
 
+    const UpdateStatusEvo = (status: EvolutionStatusDTO) =>{
+        let mapCond2CurrVal = new Map<string, number>([
+            ["GenerationCount", status.generationNumber || 0],
+            ["TargetFitness", status.fitness || 0],
+            ["ElapsedTime", status.elapsedTime || 0]
+        ]);
+
+        mapCond2isInclude.forEach((value: Boolean, key: string) => {
+            if(value)
+                setprogressBarWrapper(key, mapCond2CurrVal.get(key) || 0);
+        });
+    }
+
     const fetchProgress = async () => {
         console.log("in fetchProgress...");
         const res = await getEvolutionStatus();
         loadSolution(res.arrangement || []);
+        UpdateStatusEvo(res);
         if(!res.finished)
         {
-            let mapCond2CurrVal = new Map<string, number>([
-                ["GenerationCount", res.generationNumber || 0],
-                ["TargetFitness", res.fitness || 0],
-                ["ElapsedTime", res.elapsedTime || 0]
-            ]);
-
-            mapCond2isInclude.forEach((value: Boolean, key: string) => {
-                if(value)
-                    setprogressBarWrapper(key, mapCond2CurrVal.get(key) || 0);
-            });
             setTimeout(checkForProgress, 500);
         }
         else{
-            let mapCond2CurrVal = new Map<string, number>([
-                ["GenerationCount", res.generationNumber || 0],
-                ["TargetFitness", res.fitness || 0],
-                ["ElapsedTime", res.elapsedTime || 0]
-            ]);
-
-            mapCond2isInclude.forEach((value: Boolean, key: string) => {
-                if(value)
-                    setprogressBarWrapper(key, mapCond2CurrVal.get(key) || 0);
-            });
             let flag = false;
             mapCond2MaxVal.forEach((value: number, key: string) => {
-                if(value == mapCond2Val.get(key))
+                if(value <= (mapCond2Val.get(key) || 0))
                     flag =true;            
             });            
 
@@ -223,7 +219,7 @@ export const PublishPage = observer(() => {
         if (evolutionService.getIsSolving()) {
             checkForProgress();
         }
-        evolutionService.setIsSolving(false);
+        evolutionService.setIsSolving(false);//maybe not here
     }, []);
 
     if (status !== ComponentStatus.READY) {
