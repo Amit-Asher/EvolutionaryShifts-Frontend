@@ -46,6 +46,9 @@ import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { globalStore } from '../stores/globalStore';
 import '../themes/employeePage.css';
+import SearchIcon from '@mui/icons-material/Search';
+import { InputAdornment } from '@mui/material';
+
 
 enum EmpsSubTab {
     Employees,
@@ -468,7 +471,7 @@ export const EmployeesPage = observer(() => {
                             variant="outlined"
                             value={valueNewRole}
                             onChange={handleChangeNewRole}
-                            style={{ marginRight: "30px" }}
+                            style={{ marginRight: "20px", width: "235px" }}
                             size="small"
                         />
                         <Button id="addNewRoleButton" disableElevation={true} variant="contained" size="medium" onClick={(event) => {
@@ -483,11 +486,24 @@ export const EmployeesPage = observer(() => {
                         >Add New Role
                         </Button>
                     </div>
-                    <TextField value={freeSearchRole} label="Search Employee" onChange={(e) => {
-                        setFreeSearchRole(e.target.value);
-                        setPage(0);
-                    }} />
-                    <RolesList></RolesList>
+                    <TextField
+                        placeholder='Search Role'
+                        value={freeSearchRole}
+                        size='small'
+                        style={{ width: '380px', marginBottom: '20px' }}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                        onChange={(e) => {
+                            setFreeSearchRole(e.target.value);
+                            setPage(0);
+                        }}
+                    />
+                    <RolesList />
                 </div>
             </div>);
     }
@@ -518,10 +534,22 @@ export const EmployeesPage = observer(() => {
                     </Typography>
                 </div>
                 <div>
-                    <TextField value={freeSearchEmp} label="Search Role" onChange={(e) => {
-                        setFreeSearchEmp(e.target.value);
-                        setPage(0);
-                    }} />
+                    <TextField
+                        value={freeSearchEmp}
+                        size="small"
+                        placeholder="Search Employee"
+                        onChange={(e) => {
+                            setFreeSearchEmp(e.target.value);
+                            setPage(0);
+                        }}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
                     <Button style={{ float: 'right' }} onClick={() => setShowAddEmpDialog(prev => !prev)}>Add Employee +</Button>
                 </div>
                 {showAddEmpDialog && <div style={{
@@ -645,10 +673,6 @@ export const EmployeesPage = observer(() => {
                         </Button>
                     </div>
                 </div>}
-                {/* <SearchBar 
-                value={valuesearchedEmp}
-                onChange={(searchVal) => {requestSearchEmp(searchVal)}}
-                onCancelSearch={() => cancelSearchEmp()}/> */}
                 <EnhancedTableToolbar
                     selectedEmpToRemove={selectedEmpToRemove}
                     employees={employees}
@@ -657,7 +681,7 @@ export const EmployeesPage = observer(() => {
                     tableRows={tableRows}
                     setTableRows={setTableRows}
                     setSelectedEmpToRemove={setSelectedEmpToRemove} />
-                <div style={{ overflow: 'auto', height: '430px' }}>
+                <div style={{ overflow: 'auto', height: '390px' }}>
                     <TableContainer>
                         <Table
                             sx={{ minWidth: 750 }}
@@ -691,6 +715,7 @@ export const EmployeesPage = observer(() => {
                                                 role="checkbox"
                                                 aria-checked={isItemSelected}
                                                 tabIndex={-1}
+                                                sx={{ height: '20px' }}
                                                 key={employee.id}
                                                 selected={isItemSelected}
                                             >
@@ -1012,7 +1037,7 @@ export const EmployeesPage = observer(() => {
 
     const RolesList = () => {
         return (
-            <List style={{ width: '500px' }}>
+            <List style={{ width: '380px', overflow: 'auto', height: '335px' }}>
                 {roleRows
                     .filter((role) => role.toLowerCase().includes(freeSearchRole.toLowerCase()))
                     .map((role, index: number) => {
@@ -1154,7 +1179,7 @@ export const EmployeesPage = observer(() => {
     return (<>
         <div style={{
             width: '100%',
-            height: '740px',
+            height: '600px',
             display: 'flex'
         }}>
             <div style={{

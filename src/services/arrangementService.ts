@@ -65,12 +65,16 @@ class ArrangementService {
         }
     }
 
-    public async getProperties(): Promise<PropertiesDTO> {
+    public async getProperties(
+        hideNotification: boolean = false
+    ): Promise<PropertiesDTO> {
         try {
             if (isPropertiesEmpty(this.propertiesCache)) {
                 const res: PropertiesDTO = await (new ArrangementApi()).getProperties({ credentials: 'include' });
                 if (!res) {
-                    globalStore.notificationStore.show({ message: 'Failed to fetch arrangement properties', severity:"error" });
+                    if (!hideNotification) {
+                        globalStore.notificationStore.show({ message: 'Failed to fetch arrangement properties', severity:"error" });
+                    }
                     return emptyProperties;
                 }
                 this.propertiesCache = res ?? emptyProperties;
@@ -78,7 +82,9 @@ class ArrangementService {
             return this.propertiesCache ?? emptyProperties;
 
         } catch (err) {
-            globalStore.notificationStore.show({ message: 'Failed to fetch arrangement properties', severity:"error" });
+            if (!hideNotification) {
+                globalStore.notificationStore.show({ message: 'Failed to fetch arrangement properties', severity:"error" });
+            }
             console.error('Failed to fetch arrangement properties');
             return this.propertiesCache ?? [];
         }

@@ -13,7 +13,7 @@ import {
 import { ArrangementStore } from "../stores/arrangementStore";
 import { globalStore } from "../stores/globalStore";
 import { observer } from "mobx-react";
-import { EmployeeDTO, SchemaDTO, SchemaFamilyDTO } from "../swagger/stubs";
+import { EmployeeDTO, ReqSlotDTO, RuleWeightDTO, SchemaDTO, SchemaFamilyDTO } from "../swagger/stubs";
 import { mock } from "../mocks/mockData";
 import { useEffect, useState } from "react";
 import TimeTable from "../components/TimeTable/TimeTable";
@@ -27,7 +27,7 @@ import { PagesUrl } from "../interfaces/pages.meta";
 import InfoIcon from '@mui/icons-material/Info';
 import { mapRuleToDisplayDetails } from "../interfaces/arrangement.interfaces";
 import { Divider } from '@mui/material';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { DataGrid, GridSelectionModel } from '@mui/x-data-grid';
 
 enum NewArgmtSubTab {
     Slots,
@@ -54,6 +54,29 @@ export const NewArrangementPage = observer(() => {
             setAllRoles(roles);
             setAllEmployees(employees);
             setAllRules(allRules);
+
+            try {
+                const algorithmProperties = await arrangementService.getProperties(true);
+                arrangementStore.setReqSlots(algorithmProperties.reqSlots?.map((reqslot: ReqSlotDTO, idx: number) => {
+                    return {
+                        id: idx,
+                        startDate: new Date(reqslot?.startTime ?? ''),
+                        endDate: new Date(reqslot?.endTime ?? ''),
+                        minPersonnelSize: reqslot.personnelSize?.min ?? 0,
+                        maxPersonnelSize: reqslot.personnelSize?.max ?? 0,
+                        title: "Required*", // by design, title is always "Required*"
+                        role: reqslot.role ?? ''
+                    };
+                }) ?? []);
+                algorithmProperties?.activeEmployeesIds?.forEach((id: string) => {
+                    arrangementStore.setEmployeeAsActive(id);
+                });
+                algorithmProperties?.rulesWeights?.forEach((rule: RuleWeightDTO) => {
+                    arrangementStore.setRuleWeight(rule?.ruleName, rule?.weight ?? 0);
+                });
+            } catch (err) {
+            }
+
             setStatus(ComponentStatus.READY);
         };
         fetchRoles();
@@ -117,18 +140,10 @@ export const NewArrangementPage = observer(() => {
                             { field: 'phoneNnumber', headerName: 'PhoneNnumber', width: 150 },
                         ]}
                         pageSize={7}
+                        checkboxSelection
+                        selectionModel={arrangementStore.activeEmployeesIds} // value
+                        onSelectionModelChange={(e: any) => arrangementStore.setActiveEmployees(e)} // load data
                         rowsPerPageOptions={[5]}
-                        onCellClick={(e) => {
-                            const isActive = arrangementStore?.activeEmployeesIds?.some(
-                                (employeeId) => employeeId === e.row.id
-                            );
-                            if (isActive) {
-                                arrangementStore.unsetEmployeeAsActive(e.row.id);
-                            } else {
-                                arrangementStore.setEmployeeAsActive(e.row.id)
-                            }
-                        }}
-                        checkboxSelection       
                         onColumnHeaderClick={(e) => {
                             if (e.field !== '__check__') {
                                 return;
@@ -138,7 +153,7 @@ export const NewArrangementPage = observer(() => {
                             } else { // length is 0
                                 allEmployees.forEach(employee => arrangementStore.setEmployeeAsActive(employee.id));
                             }
-                        }}                 
+                        }}
                     />
                 </div>
             </div>);

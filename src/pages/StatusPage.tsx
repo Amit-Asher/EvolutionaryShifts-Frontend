@@ -107,7 +107,7 @@ export const StatusPage = observer(() => {
                 <div style={{ margin: '10px 10px' }}>
                     <Divider style={{ marginBottom: '40px' }} />
                 </div>
-                <div style={{ overflow: 'auto', height: '360px', marginTop: '-30px' }}>
+                <div style={{ overflow: 'auto', height: '360px', marginTop: '-30px', marginLeft: '10px' }}>
                     {statusBarsData?.sort((a: StatusBarProps, b: StatusBarProps) => a.isActive ? -1 : 1).map((statusBar, index: number) => {
                         return (<StatusBar
                             title={statusBar.title}

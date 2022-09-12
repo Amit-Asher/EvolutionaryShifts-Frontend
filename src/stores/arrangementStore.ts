@@ -60,6 +60,12 @@ export class ArrangementStore {
     }
 
     @action
+    public setActiveEmployees(ids: string[]) {
+        this.activeEmployeesIds = ids;
+    }
+
+
+    @action
     public setReqSlots(reqSlots: ReqSlotCell[]) {
         this.reqSlots = reqSlots;
         console.log(`this.reqSlots: ${JSON.stringify(this.reqSlots, undefined, 2)}`)
