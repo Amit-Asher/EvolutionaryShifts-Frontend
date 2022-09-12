@@ -91,13 +91,14 @@ export const Header = observer((props: HeaderProps) => {
                     }
                     textColor="inherit"
                 >
-                    {props.subTabs.map((subtab: SubTab) => {
+                    {props.subTabs.map((subtab: SubTab, index: number) => {
                         return (
                             <Tab
                                 onClick={() => {
                                     navigate(subtab.url);
                                 }}
                                 label={subtab.label}
+                                key={index.toString()}
                             ></Tab>
                         );
                     })}

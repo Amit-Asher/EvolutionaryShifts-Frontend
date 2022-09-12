@@ -3,11 +3,15 @@ import { makeObservable, observable } from "mobx";
 import { ArrangementStore } from "./arrangementStore";
 import { EvolutionStore } from './evolutionStore';
 import { PreferenceStore } from './preferenceStore';
+import { PublishStore } from './publishStore';
 
 export class GlobalStore {
     
     @observable
     public arrangementStore: ArrangementStore;
+
+    @observable
+    public publishStore: PublishStore;
 
     @observable
     public evolutionStore: EvolutionStore;
@@ -23,6 +27,7 @@ export class GlobalStore {
         this.arrangementStore = new ArrangementStore();
         this.evolutionStore = new EvolutionStore(this.notificationStore);
         this.preferenceStore = new PreferenceStore();
+        this.publishStore = new PublishStore();
         makeObservable(this)
     }
 }

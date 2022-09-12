@@ -1,11 +1,11 @@
 import Paper from '@mui/material/Paper';
 import { observer } from 'mobx-react';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { globalStore } from "../stores/globalStore";
 import { ArrangementStore } from "../stores/arrangementStore";
 import TimeTable, { ReqSlotCell } from "../components/TimeTable/TimeTable";
 import { useNavigate } from 'react-router-dom';
-import { EmployeeDTO, EvolutionApi, EvolutionaryOperatorDTO, EvolutionStatusDTO, PublishApi, ShiftDTO } from "../swagger/stubs";
+import { EmployeeDTO, EvolutionApi, EvolutionaryOperatorDTO, EvolutionStatusDTO, PublishApi, ShiftDTO, TermConditionsDTO } from "../swagger/stubs";
 import { ComponentStatus } from "../interfaces/common";
 import { companyService } from "../services/companyService";
 import { mock } from "../mocks/mockData";
@@ -20,6 +20,8 @@ import { evolutionService } from '../services/evolutionService';
 import { EvolutionStore } from '../stores/evolutionStore';
 import { TermCondProgressBar } from '../components/TermCondProgressBar/TermConfProgressBar';
 import { NotificationStore } from '../stores/notificationStore';
+import { getDateIntervalDuration } from '@amcharts/amcharts5/.internal/core/util/Time';
+import { PublishStore } from '../stores/publishStore';
 
 const Label = styled('label')`
   padding: 0 0 4px;
@@ -27,43 +29,34 @@ const Label = styled('label')`
   display: block;
 `;
 
-
 export const PublishPage = observer(() => {
-    const evolutionStore: EvolutionStore = globalStore.evolutionStore;
+    const publishStore: PublishStore = globalStore.publishStore;
     const notificationStore: NotificationStore = globalStore.notificationStore;
     const navigate = useNavigate();
-    const [allRoles, setAllRoles] = useState<string[]>([]);
-    const [allEmployees, setAllEmployees] = useState<EmployeeDTO[]>([]);//maybe there is no nedd in this
-    const [allRules, setAllRules] = useState<string[]>([]);//maybe there is no nedd in this
     const [status, setStatus] = useState<ComponentStatus>(
         ComponentStatus.LOADING
     );
-    const [reqslots, setReqSlots] = useState<ReqSlotCell[]>([]);
-    const [generationNumber, setGenerationNumber] = useState<string>(" ");
-    const [fitness, setFitness] = useState<string>(" ");
 
+    const [termCondsIncludes, setTermCondsIncludes] = useState<TermConditionsDTO[]>([]);
 
-    const [progressBarGen, setProgressBarGen] = useState<number>(0);
-    const [progressBarFitness, setProgressBarFitness]= useState<number>(0);
-    const [progressBarTimer, setProgressBarTimer]= useState<number>(0);
-    const [stagnationStatus, setStagnationStatus]= useState<string>("");
-    
-
+        //work for nkw just for tm with one value//can get the values from 'termCondsIncludes'
     let mapCond2DisplayName = new Map<string, string>([
         ["GenerationCount", "count"],
-        ["ElapsedTime", "maxDuration"],
+        ["ElapsedTime", "maxDuration"], 
         ["TargetFitness", "targetFitness"]
     ]);
+
     let mapCond2isInclude = new Map<string, Boolean>([
         ["GenerationCount", false],
         ["ElapsedTime", false],
-        ["TargetFitness", false]
+        ["TargetFitness", false],
+        ["Stagnation", false]
     ]);
     let mapCond2MaxVal = new Map<string, number>();
     let mapCond2ProgressVal = new Map<string, number>([
-        ["GenerationCount", progressBarGen],
-        ["TargetFitness", progressBarFitness],
-        ["ElapsedTime", progressBarTimer]
+        ["GenerationCount", publishStore.progressBarGen],
+        ["TargetFitness", publishStore.progressBarFitness],
+        ["ElapsedTime", publishStore.progressBarTimer]
     ]);
     let mapCond2Val = new Map<string, number>([
         ["GenerationCount", 0],
@@ -80,22 +73,22 @@ export const PublishPage = observer(() => {
             {
                 if (num <= max)
                 {
-                    setProgressBarGen(newVal);
+                    publishStore.setProgressBarGen(newVal);
                 }
                 break;
             }
             case "TargetFitness":
             {
                 if (num <= max)
-                    setProgressBarFitness(newVal);
+                    publishStore.setProgressBarFitness(newVal);
                 break;
             }
             case "ElapsedTime":
             {
                 if (num <= max)
-                    setProgressBarTimer(newVal);
+                    publishStore.setProgressBarTimer(newVal);
                 else
-                    setProgressBarTimer(100);
+                    publishStore.setProgressBarTimer(100);
                 break;
             }
         }
@@ -114,13 +107,38 @@ export const PublishPage = observer(() => {
         }
     }
 
+    const getTermConditionsIncludes = async (): Promise<void> => {
+        try {
+            // GET REQUEST
+            const res: TermConditionsDTO[] = await (new EvolutionApi()).getTermConditions({ credentials: 'include' });
+
+            res.map((tm) => {
+                let nameCond = tm.termCondition ?? "*error*";
+                let displayName: string = mapCond2DisplayName.get(nameCond) ?? "*error*";
+                let maxVal = 0;
+                if(tm.params !== undefined)
+                    maxVal= parseFloat(tm.params[displayName]);
+                mapCond2MaxVal.set(nameCond, maxVal);
+                mapCond2isInclude.set(nameCond, true);
+            });
+
+            setTermCondsIncludes(res);
+            console.log("Success to get term conditions");
+            if(res.length === 0)
+                notificationStore.show({ message: "There is not term Condotions", severity: "warning" });
+        } catch (err) {
+            console.log('failed to get term conditions');
+            notificationStore.show({ message: "Failed to ge term conditions", severity: "error" });
+        }
+    }
+
     const getEvolutionStatus = async (): Promise<EvolutionStatusDTO> => {
         try {
             // GET REQUEST
             const res: EvolutionStatusDTO = await (new EvolutionApi()).getSolution({ credentials: 'include' });
-            setFitness("Fitness: ".concat(res.fitness?.toFixed(3).toString() || ""));
-            setGenerationNumber("Generation Number: ".concat(res.generationNumber?.toString() || " "));
-            // notificationStore.show({ message: "Success to get evolution status", severity: "success" });
+            publishStore.setFitness("Fitness: ".concat(res.fitness?.toFixed(3).toString() || ""));
+            publishStore.setGenerationNumber("Generation Number: ".concat(res.generationNumber?.toString() || " "));
+            publishStore.setElasedTime("Running time: ".concat(((res.elapsedTime || 0) / 1000).toString()).concat(" seconds"));
             return res;
         } catch (err) {
             console.log('failed to get evolution status');
@@ -130,16 +148,22 @@ export const PublishPage = observer(() => {
     }
 
     const fetchRoles = async () => {
-        const employees: EmployeeDTO[] = await companyService.getEmployees();
         const roles: string[] = await companyService.getRoles();
-        setAllRoles(roles);
-        setAllEmployees(employees);
-        setAllRules(mock.rules); // TODO: add route to api and get rules metadata from there
-        setStatus(ComponentStatus.READY);
+        publishStore.setAllRoles(roles);
+    };
+
+    const fetchTermConditionsIncludes = async () => {
+        await getTermConditionsIncludes();
+    };
+
+    const fetchLastSolution = async () => {
+        const res = await getEvolutionStatus();
+        loadSolution(res.arrangement || []);
+        UpdateStatusEvo(res);
     };
 
     const loadSolution =  (solution: ShiftDTO[]) => {
-        if (reqslots.length == 0) {
+        if (publishStore.reqslots.length == 0) {
             let map: { [key: string]: ShiftDTO[] } = {};
             for (let i = 0; i < solution.length; i++) {
                 const key: any = `${solution[i].startTime || ''}-${solution[i].endTime || ''}-${solution[i].role || ''}`;
@@ -162,8 +186,7 @@ export const PublishPage = observer(() => {
                     role: shiftsInSlot[0].role || "error_role"
                 };
             });
-            setReqSlots(reqslotscell);
-            //console.log(`reqslots: ${JSON.stringify(reqslots, undefined, 2)}`);
+            publishStore.setReqslots(reqslotscell);
         }
     }
 
@@ -174,9 +197,11 @@ export const PublishPage = observer(() => {
             ["ElapsedTime", status.elapsedTime || 0]
         ]);
 
-        mapCond2isInclude.forEach((value: Boolean, key: string) => {
-            if(value)
-                setprogressBarWrapper(key, mapCond2CurrVal.get(key) || 0);
+        mapCond2isInclude
+        .forEach((value: Boolean, key: string) => {
+            if(key !== "Stagnation")
+                if(value)
+                    setprogressBarWrapper(key, mapCond2CurrVal.get(key) || 0);
         });
     }
 
@@ -190,14 +215,19 @@ export const PublishPage = observer(() => {
             setTimeout(checkForProgress, 500);
         }
         else{
-            let flag = false;
-            mapCond2MaxVal.forEach((value: number, key: string) => {
-                if(value <= (mapCond2Val.get(key) || 0))
-                    flag =true;            
-            });            
+            if((!(res.fitness === 100 && res.generationNumber === 1)) && mapCond2isInclude.get("Stagnation"))
+            {
+                let flag = false;
+                mapCond2MaxVal.forEach((value: number, key: string) => {
+                    if(value <= (mapCond2Val.get(key) || 0))
+                        flag =true;            
+                });            
+    
+                if(!flag)
+                    publishStore.setStagnationStatus("End with Stagnation!");
+            }
 
-            if(!flag)
-                setStagnationStatus("End with Stagnation!");
+            notificationStore.show({ message: "The algorighm is over", severity: "info" });
         }
     }
 
@@ -209,17 +239,14 @@ export const PublishPage = observer(() => {
 
     useEffect(() => {
         fetchRoles();
-        
-        evolutionStore.termConds.map((termCond: EvolutionaryOperatorDTO) => {
-            let displayName: string = mapCond2DisplayName.get(termCond.type ?? "*error*") ?? "*error*";
-            mapCond2MaxVal.set(termCond.type ?? "*error*", termCond.params[displayName]);
-            mapCond2isInclude.set(termCond.type ?? "*error*", true);
-        });
-        
+        fetchTermConditionsIncludes();
+        fetchLastSolution();
+        setStatus(ComponentStatus.READY);
+
         if (evolutionService.getIsSolving()) {
             checkForProgress();
         }
-        evolutionService.setIsSolving(false);//maybe not here
+        evolutionService.setIsSolving(false);
     }, []);
 
     if (status !== ComponentStatus.READY) {
@@ -230,30 +257,33 @@ export const PublishPage = observer(() => {
         <Paper sx={{ margin: "auto", overflow: "hidden" }}>
 
             <Label>Term Conditions Status</Label>
-            {evolutionStore.termConds
-            .filter(termCond => termCond.type !== '' && termCond.type !== 'Stagnation')
-            .map((termCond: EvolutionaryOperatorDTO) => {
+
+            {termCondsIncludes
+            .filter(termCond => termCond.termCondition !== 'Stagnation') 
+            .map((tm) => {
                 return (<TermCondProgressBar
-                    title={termCond.type ?? "*error*"}
+                    title={tm.termCondition ?? "*error*"}
                     map={mapCond2ProgressVal}
                 />);
             })}
-            <Label>{stagnationStatus}</Label>
+
+            <Label>{publishStore.stagnationStatus}</Label>
 
 
             <div style={{ marginBottom: "30px", display: 'flex' }}>
-                <Label style={{ marginRight: "20px" }}>{fitness}</Label>
-                <Label>{generationNumber}</Label>
+                <Label style={{ marginRight: "20px" }}>{publishStore.fitness}</Label>
+                <Label style={{ marginRight: "20px" }}>{publishStore.generationNumber}</Label>
+                <Label style={{ marginRight: "20px" }}>{publishStore.elasedTime}</Label>
             </div>
             <div style={{ backgroundColor: "#fff", padding: "20px" }}>
                 <TimeTable
-                    views={allRoles}
-                    slots={reqslots}
+                    views={publishStore.allRoles}
+                    slots={publishStore.reqslots}
                 />
             </div>
             <Button id="ButtonPublish" variant="contained" disableElevation={true} style={{ marginBottom: "10px" }}
                 onClick={(event) => {
-                    if (reqslots.length !== 0) {
+                    if (publishStore.reqslots.length !== 0) {
                         publishArrangement();
                         const btn = document.getElementById('ButtonPublish') as HTMLButtonElement | null;
                         btn?.setAttribute('disabled', '');

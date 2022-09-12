@@ -1,92 +1,62 @@
 import * as React from 'react';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Checkbox from '@mui/material/Checkbox';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
-import axios, { AxiosRequestConfig } from 'axios';
-import {
-    useAutocomplete,
-    AutocompleteGetTagProps,
-} from '@mui/base/AutocompleteUnstyled';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
-import { autocompleteClasses } from '@mui/material/Autocomplete';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import 'react-phone-number-input/style.css'
-import PhoneInput from 'react-phone-number-input'
-import { E164Number } from 'libphonenumber-js';
-import { Paper } from '@mui/material';
+import { Container, Paper } from '@mui/material';
 import { observer } from 'mobx-react';
-import { EmployeeApi, EmployeeDTO, EmployeesDTO, GenericResponseDTO, NewEmployeeDTO, RoleApi, RolesDTO, SettingsApi } from '../swagger/stubs';
-import AsyncSelect from 'react-select/async';
-import cssVars from '@mui/system/cssVars';
-import { FormControlUnstyledContext } from '@mui/base';
-import { isGenerator } from 'mobx/dist/internal';
-import { companyService } from '../services/companyService';
+import { LoginApi, SettingsApi } from '../swagger/stubs';
 
-
-
-
-
-
-
-
+const Label = styled('label')`
+  padding: 0 0 4px;
+  line-height: 1.5;
+  display: block;
+`;
 
 export const ForgetPasswordPage = observer(() => {
-    const [valueEmailEmp, setValueEmailEmp] = React.useState("");
+    const [valueEmailUser, setValueEmailUser] = React.useState<string>("");
+    const [generatePassword, setGeneratePassword] = React.useState<string>("");
 
-    const handleChangeEmpEmail = (e: { target: { value: React.SetStateAction<string>; }; }) => {
-        setValueEmailEmp(e.target.value);
+    const handleChangeUserEmail = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+        setValueEmailUser(e.target.value);
     };
 
-    const generatePasswordToUser = async (userEmail: string): Promise<void> => {
+    const generatePasswordToUser = async (): Promise<void> => {
         try{
-            // POST REQUEST           
-            const res = await (new SettingsApi().generatePasswordForEmp(userEmail, { credentials: 'include' }));
+            // POST REQUEST   
+            const res = await (new LoginApi()).generatePasswordForUser(valueEmailUser, { credentials: 'include' });
+            if(res.success)
+                setGeneratePassword("Your new password is: " + res.newPassword);
+            else
+                setGeneratePassword("Your email not in the system. Please try again or sign in");
+                
             //we dont need to get the password and we dont need to send id of employee
             //res.newPassword
             console.log(res.message);
             //need to send an email to the user that contain his new password
         }catch (err) {
-            console.log(`Failed to generate password to User with email: ${userEmail}`);
+            console.log(`Failed to generate password to User with email: ${valueEmailUser}`);
         }
     }
 
      return (<>
-         <Paper sx={{ margin: 'auto', overflow: 'hidden', height: '100%' }}>
+         <Container maxWidth="xs" style={{ marginTop: '50px' }}>
             <div style={{marginBottom: "10px"}}>
-                <TextField id="EmailUserTextField" label="Email" variant="outlined" value={valueEmailEmp}
-                     onChange={handleChangeEmpEmail} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
+                <TextField id="EmailUserTextField" label="Email" variant="outlined" value={valueEmailUser}
+                     onChange={handleChangeUserEmail} style={{marginTop: "20px"}} />
             </div>
-             <Button id="generatepasswordButton" disableElevation={true} variant="contained" onClick={(event) => {
+             <Button id="generatepasswordButton" disableElevation={true} variant="contained" style={{marginLeft: "15px"}}
+              onClick={async (event) => {
+                await generatePasswordToUser();
                     {/**
-                        if user exsists send to his email new temp password
+                        if user exsists send to his email new temp password from b.e
                         else tell that he is not and he need to sign up below or in prev page
                     */}
                      }}
              >Generate new password
              </Button>
 
-         </Paper>
+             <Label>{generatePassword}</Label>
+         </Container>
          </>);
 
 });

@@ -52,8 +52,8 @@ export const PreferencesPage = observer(() => {
                     setSelectedEmployee(newSelectedEmployee);
                 }}
             >
-                {allEmployees.map((employee: EmployeeDTO) => {
-                    return <MenuItem value={employee?.fullName || ''}>{employee.fullName}</MenuItem>;
+                {allEmployees.map((employee: EmployeeDTO, index: number) => {
+                    return (<MenuItem key={index.toString()} value={employee?.fullName || ''}>{employee.fullName}</MenuItem>);
                 })}
             </Select>
 

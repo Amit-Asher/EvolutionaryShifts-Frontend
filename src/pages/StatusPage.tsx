@@ -41,10 +41,11 @@ export const StatusPage = observer(() => {
                 roles: allEmployees.find((emp) => emp.id === empPref.employeeId)?.roles ?? [],
                 employeeSlots: empPref?.employeeSlots ?? []
             }));
-            const statusBars: StatusBarProps[] = allEmployees.map((employee: EmployeeDTO) => {
+            const statusBars: StatusBarProps[] = allEmployees.map((employee: EmployeeDTO, index: number) => {
                 return {
                     title: employee.fullName ?? '',
-                    isActive: allPreferences.some(pref => pref.employeeId === employee.id)
+                    isActive: allPreferences.some(pref => pref.employeeId === employee.id),
+                    key: index.toString()
                 };
             });
             setStatusBarsData(statusBars);
@@ -98,8 +99,8 @@ export const StatusPage = observer(() => {
                         }}
                         style={{ width: '100%', height: '40px' }}
                     >
-                        {employeesStatus.map((empStatus: EmployeeStatus) => {
-                            return <MenuItem value={empStatus.employeeName}>{empStatus.employeeName}</MenuItem>;
+                        {employeesStatus.map((empStatus: EmployeeStatus, index: number) => {
+                            return (<MenuItem key={index.toString()} value={empStatus.employeeName}>{empStatus.employeeName}</MenuItem>);
                         })}
                     </Select>
                 </div>
@@ -107,10 +108,11 @@ export const StatusPage = observer(() => {
                     <Divider style={{ marginBottom: '40px' }} />
                 </div>
                 <div style={{ overflow: 'auto', height: '360px', marginTop: '-30px' }}>
-                    {statusBarsData?.sort((a: StatusBarProps, b: StatusBarProps) => a.isActive ? -1 : 1).map((statusBar) => {
+                    {statusBarsData?.sort((a: StatusBarProps, b: StatusBarProps) => a.isActive ? -1 : 1).map((statusBar, index: number) => {
                         return (<StatusBar
                             title={statusBar.title}
                             isActive={statusBar.isActive}
+                            key={index.toString()}
                         />);
                     })}
                 </div>
