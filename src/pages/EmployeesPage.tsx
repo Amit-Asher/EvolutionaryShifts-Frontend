@@ -434,6 +434,7 @@ export const EmployeesPage = observer(() => {
     const [currentTab, setCurrentTab] = React.useState<EmpsSubTab>(EmpsSubTab.Roles);
     const [freeSearchEmp, setFreeSearchEmp] = React.useState<string>('');
     const [freeSearchRole, setFreeSearchRole] = React.useState<string>('');
+    const [showAddEmpDialog, setShowAddEmpDialog] = React.useState<boolean>(false);
 
     const getRolesTab = () => {
         return (
@@ -443,7 +444,8 @@ export const EmployeesPage = observer(() => {
                     height: '100%',
                     marginRight: "100px",
                     backgroundColor: '#fff',
-                    justifyContent: "center"
+                    justifyContent: "center",
+                    padding: '20px'
                 }}
             >
                 {/* TITLE */}
@@ -459,26 +461,35 @@ export const EmployeesPage = observer(() => {
                         Roles Dashboard
                     </Typography>
                 </div>
-                <div style={{ display: 'flex', marginBottom: "10px" }}>
-                    <TextField id="addNewRoleTextField" label="New Role" variant="outlined" value={valueNewRole}
-                        onChange={handleChangeNewRole} style={{ marginRight: "30px" }} />
-                    <Button id="addNewRoleButton" disableElevation={true} variant="contained" onClick={(event) => {
-                        if (valueNewRole.length === 0) {
-                            console.log("new role is empty");
-                            globalStore.notificationStore.show({ message: "new role is empty", severity: "error" });
-                        }
-                        else
-                            addNewRole(valueNewRole);
-                        setValueNewRole("");
-                    }}
-                    >Add New Role
-                    </Button>
+                <div style={{ padding: '30px 20px' }}>
+                    <div style={{ display: 'flex', marginBottom: "10px" }}>
+                        <TextField
+                            id="addNewRoleTextField"
+                            label="New Role"
+                            variant="outlined"
+                            value={valueNewRole}
+                            onChange={handleChangeNewRole}
+                            style={{ marginRight: "30px" }}
+                            size="small"
+                        />
+                        <Button id="addNewRoleButton" disableElevation={true} variant="contained" size="medium" onClick={(event) => {
+                            if (valueNewRole.length === 0) {
+                                console.log("new role is empty");
+                                globalStore.notificationStore.show({ message: "new role is empty", severity: "error" });
+                            }
+                            else
+                                addNewRole(valueNewRole);
+                            setValueNewRole("");
+                        }}
+                        >Add New Role
+                        </Button>
+                    </div>
+                    <TextField value={freeSearchRole} label="Search Employee" onChange={(e) => {
+                        setFreeSearchRole(e.target.value);
+                        setPage(0);
+                    }} />
+                    <RolesList></RolesList>
                 </div>
-                <TextField value={freeSearchRole} label="Search Employee" onChange={(e) => {
-                    setFreeSearchRole(e.target.value);
-                    setPage(0);
-                }} />
-                <RolesList></RolesList>
             </div>);
     }
 
@@ -490,7 +501,8 @@ export const EmployeesPage = observer(() => {
                     height: '100%',
                     marginRight: "100px",
                     backgroundColor: '#fff',
-                    justifyContent: "center"
+                    justifyContent: "center",
+                    padding: '0 20px 20px 20px'
                 }}
             >
                 {/* TITLE */}
@@ -506,18 +518,70 @@ export const EmployeesPage = observer(() => {
                         Employees Dashboard
                     </Typography>
                 </div>
-
-                <div style={{ display: 'flex' }}>
-                    <TextField id="firstNameEmpTextField" label="First Name" variant="outlined" value={valueFirstNameEmp}
-                        onChange={handleChangeEmpFirstName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
-                    <TextField id="LastNameEmpTextField" label="Last Name" variant="outlined" value={valueLastNameEmp}
-                        onChange={handleChangeEmpLastName} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
-                    <TextField id="EmailEmpTextField" label="Email" variant="outlined" value={valueEmailEmp}
-                        onChange={handleChangeEmpEmail} style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px" }} />
-                    <PhoneInput id="phoneEmpTextField" defaultCountry="IL" placeholder="Enter phone number" value={phoneNumber}
-                        onChange={handleChangePhoneName} style={{ marginRight: "20px", marginTop: "20px" }} />
-                    <div style={{ display: "inline-block", marginRight: "20px", marginTop: "20px" }}>
-                        <Label>Select Roles</Label>
+                <div>
+                    <TextField value={freeSearchEmp} label="Search Role" onChange={(e) => {
+                        setFreeSearchEmp(e.target.value);
+                        setPage(0);
+                    }} />
+                    <Button style={{ float: 'right' }} onClick={() => setShowAddEmpDialog(prev => !prev)}>Add Employee +</Button>
+                </div>
+                {showAddEmpDialog && <div style={{
+                    position: 'absolute',
+                    height: '480px',
+                    backgroundColor: '#F9F9F9',
+                    width: '400px',
+                    zIndex: '10',
+                    borderStyle: 'solid',
+                    padding: '10px',
+                    borderWidth: 'thin',
+                    top: '280px',
+                    right: '60px'
+                }}>
+                    <div style={{ width: '100%', paddingLeft: '12px', paddingTop: '10px' }}>
+                        <Label>Add Employee</Label>
+                    </div>
+                    <div style={{ width: '100%' }}>
+                        <TextField
+                            label="First Name"
+                            variant="outlined"
+                            size="small"
+                            value={valueFirstNameEmp}
+                            onChange={handleChangeEmpFirstName}
+                            style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px", backgroundColor: '#fff' }}
+                        />
+                    </div>
+                    <div style={{ width: '100%' }}>
+                        <TextField
+                            label="Last Name"
+                            variant="outlined"
+                            size="small"
+                            value={valueLastNameEmp}
+                            onChange={handleChangeEmpLastName}
+                            style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px", backgroundColor: '#fff' }}
+                        />
+                    </div>
+                    <div style={{ width: '100%' }}>
+                        <TextField
+                            label="Email"
+                            variant="outlined"
+                            size="small"
+                            value={valueEmailEmp}
+                            onChange={handleChangeEmpEmail}
+                            style={{ marginRight: "20px", marginTop: "20px", marginLeft: "10px", backgroundColor: '#fff' }}
+                        />
+                    </div>
+                    <div style={{ width: '100%', padding: '12px' }}>
+                        <PhoneInput
+                            defaultCountry="IL"
+                            placeholder="Phone number"
+                            value={phoneNumber}
+                            onChange={handleChangePhoneName}
+                            className="custom-phone-input"
+                            style={{ marginRight: "127px", marginTop: "20px", height: '39px' }}
+                        />
+                    </div>
+                    <div style={{ width: '100%', padding: '12px' }}>
+                        {/* <Label>Select Roles</Label> */}
                         <div>
                             <AsyncSelect
                                 isMulti
@@ -533,80 +597,59 @@ export const EmployeesPage = observer(() => {
                                 }}
                                 key={`${roleSelectKey}`}
                                 defaultOptions
+                                placeholder={'Select roles...'}
                             />
                         </div>
                     </div>
-                    <Button
-                        id={"addEmpButton"}
-                        variant="contained"
-                        disableElevation={true}
-                        style={{ marginTop: "20px", marginRight: "10px" }}
-                        onClick={(event) => {
-                            var newEmp: NewEmployeeDTO = {
-                                firstName: valueFirstNameEmp,
-                                lastName: valueLastNameEmp,
-                                fullName: valueFirstNameEmp.concat(" ").concat(valueLastNameEmp),
-                                email: valueEmailEmp,
-                                phoneNumber: phoneNumber,
-                                roles: selectedRoles
-                            };
+                    <div style={{ width: '100%' }}>
+                        <Button
+                            id={"addEmpButton"}
+                            variant="contained"
+                            disableElevation={true}
+                            style={{ marginTop: "20px", marginRight: "10px", float: 'right' }}
+                            onClick={(event) => {
+                                var newEmp: NewEmployeeDTO = {
+                                    firstName: valueFirstNameEmp,
+                                    lastName: valueLastNameEmp,
+                                    fullName: valueFirstNameEmp.concat(" ").concat(valueLastNameEmp),
+                                    email: valueEmailEmp,
+                                    phoneNumber: phoneNumber,
+                                    roles: selectedRoles
+                                };
 
-                            if (valueFirstNameEmp === "") {
-                                console.log("Employee first name is empty");
-                                globalStore.notificationStore.show({ message: "Employee first name is empty", severity: "error" });
-                            }
-                            else if (valueLastNameEmp === "") {
-                                console.log("Employee last name is empty");
-                                globalStore.notificationStore.show({ message: "Employee last name is empty", severity: "error" });
-                            }
-                            else if (valueEmailEmp.length === 0) {
-                                console.log("Employee email is empty");
-                                globalStore.notificationStore.show({ message: "Employee email is empty", severity: "error" });
-                            }
-                            else if (phoneNumber.length === 0) {
-                                console.log("Employee phone is empty");
-                                globalStore.notificationStore.show({ message: "Employee phone is empty", severity: "error" });
-                            }
-                            else if (selectedRoles.length === 0) {
-                                console.log("Employee roles is empty");
-                                globalStore.notificationStore.show({ message: "Employee roles is empty", severity: "error" });
-                            }
-                            else {
-                                let isEmpValid = true;
-                                for (let i = 0; i < employees.length; i++) {
-                                    if (employees[i].fullName === valueFirstNameEmp.concat(" ").concat(valueLastNameEmp)) {
-                                        console.log("Employee full name is already exist");
-                                        globalStore.notificationStore.show({ message: "Employee full name is already exist", severity: "error" });
-                                        isEmpValid = false;
-                                        break;
-                                    }
-
-                                    if (employees[i].email === valueEmailEmp) {
-                                        console.log("Employee email is already exist");
-                                        globalStore.notificationStore.show({ message: "Employee email is already exist", severity: "error" });
-                                        isEmpValid = false;
-                                        break;
-                                    }
-
-                                    if (employees[i].phoneNumber === phoneNumber) {
-                                        console.log("Employee phone is already exist");
-                                        globalStore.notificationStore.show({ message: "Employee phone is already exist", severity: "error" });
-                                        isEmpValid = false;
-                                        break;
-                                    }
+                                if (valueFirstNameEmp === "") {
+                                    console.log("Employee first name is empty");
+                                    globalStore.notificationStore.show({ message: "Employee first name is empty", severity: "error" });
                                 }
-
-                                if (isEmpValid)
+                                else if (valueLastNameEmp === "") {
+                                    console.log("Employee last name is empty");
+                                    globalStore.notificationStore.show({ message: "Employee last name is empty", severity: "error" });
+                                }
+                                else if (valueEmailEmp.length === 0) {
+                                    console.log("Employee email is empty");
+                                    globalStore.notificationStore.show({ message: "Employee email is empty", severity: "error" });
+                                }
+                                else if (phoneNumber.length === 0) {
+                                    console.log("Employee phone is empty");
+                                    globalStore.notificationStore.show({ message: "Employee phone is empty", severity: "error" });
+                                }
+                                else if (selectedRoles.length === 0) {
+                                    console.log("Employee roles is empty");
+                                    globalStore.notificationStore.show({ message: "Employee roles is empty", severity: "error" });
+                                }
+                                else {
                                     sendNewEmployee(newEmp);
-                            }
-                        }}
-                    >Add Employee
-                    </Button>
-                </div>
-                <TextField value={freeSearchEmp} label="Search Role" onChange={(e) => {
-                    setFreeSearchEmp(e.target.value);
-                    setPage(0);
-                }} />
+                                }
+                                setShowAddEmpDialog(false);
+                            }}
+                        >Add Employee
+                        </Button>
+                    </div>
+                </div>}
+                {/* <SearchBar 
+                value={valuesearchedEmp}
+                onChange={(searchVal) => {requestSearchEmp(searchVal)}}
+                onCancelSearch={() => cancelSearchEmp()}/> */}
                 <EnhancedTableToolbar
                     selectedEmpToRemove={selectedEmpToRemove}
                     employees={employees}
@@ -616,97 +659,102 @@ export const EmployeesPage = observer(() => {
                     setTableRows={setTableRows}
                     setSelectedEmpToRemove={setSelectedEmpToRemove} />
                 <div style={{ overflow: 'auto', height: '430px' }}>
-                <TableContainer>
-                    <Table
-                        sx={{ minWidth: 750 }}
-                        aria-labelledby="tableTitle"
-                        size={dense ? 'small' : 'medium'}
-                    >
-                        <EnhancedTableHead
-                            numSelected={selectedEmpToRemove.length}
-                            order={order}
-                            orderBy={orderBy}
-                            onSelectAllClick={handleSelectAllClick}
-                            onRequestSort={handleRequestSort}
-                            rowCount={tableRows.length}
-                        />
-                        {<TableBody>
-                            {tableRows
-                                .filter(row => {
-                                    return row.firstName?.toLowerCase()?.includes(freeSearchEmp.toLowerCase()) ||
-                                        row.lastName?.toLowerCase()?.includes(freeSearchEmp.toLowerCase()) ||
-                                        row.email?.toLowerCase()?.includes(freeSearchEmp.toLowerCase()) ||
-                                        row.phoneNumber?.toLowerCase()?.includes(freeSearchEmp.toLowerCase())
-                                })
-                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((employee: EmployeeDTO, index: number) => {
-                                    const isItemSelected = isSelected((employee.id || "*error*").toString());
-                                    const labelId = `enhanced-table-checkbox-${index}`;
+                    <TableContainer>
+                        <Table
+                            sx={{ minWidth: 750 }}
+                            aria-labelledby="tableTitle"
+                            size={dense ? 'small' : 'medium'}
+                        >
+                            <EnhancedTableHead
+                                numSelected={selectedEmpToRemove.length}
+                                order={order}
+                                orderBy={orderBy}
+                                onSelectAllClick={handleSelectAllClick}
+                                onRequestSort={handleRequestSort}
+                                rowCount={tableRows.length}
+                            />
+                            {<TableBody>
+                                {tableRows
+                                    .filter(row => {
+                                        return row.firstName?.toLowerCase()?.includes(freeSearchEmp.toLowerCase()) ||
+                                            row.lastName?.toLowerCase()?.includes(freeSearchEmp.toLowerCase()) ||
+                                            row.email?.toLowerCase()?.includes(freeSearchEmp.toLowerCase()) ||
+                                            row.phoneNumber?.toLowerCase()?.includes(freeSearchEmp.toLowerCase())
+                                    })
+                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                    .map((employee: EmployeeDTO, index: number) => {
+                                        const isItemSelected = isSelected((employee.id || "*error*").toString());
+                                        const labelId = `enhanced-table-checkbox-${index}`;
 
-                                    return (
-                                        <TableRow
-                                            hover
-                                            role="checkbox"
-                                            aria-checked={isItemSelected}
-                                            tabIndex={-1}
-                                            key={employee.id}
-                                            selected={isItemSelected}>
-
-                                            <TableCell
-                                                padding="checkbox"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                <Checkbox
-                                                    color="primary"
-                                                    checked={isItemSelected}
-                                                    inputProps={{
-                                                        'aria-labelledby': labelId,
-                                                    }} />
-                                            </TableCell>
-                                            <TableCell
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}
-                                                component="th"
-                                                id={labelId}
-                                                scope="row"
-                                                padding="none"
+                                        return (
+                                            <TableRow
+                                                hover
+                                                role="checkbox"
+                                                aria-checked={isItemSelected}
+                                                tabIndex={-1}
+                                                key={employee.id}
+                                                selected={isItemSelected}
                                             >
-                                                {employee.firstName}
-                                            </TableCell>
-                                            <TableCell
-                                                padding="none"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                {employee.lastName}
-                                            </TableCell>
-                                            <TableCell
-                                                padding="none"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                {employee.email}
-                                            </TableCell>
-                                            <TableCell
-                                                padding="none"
-                                                onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
-                                                {employee.phoneNumber}
-                                            </TableCell>
-                                            <TableCell padding="none" >
-                                                <RolesListForEmp employee={employee} employees={employees} setEmployees={setEmployees}
-                                                    tableRows={tableRows} setTableRows={setTableRows} />
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })
+
+                                                <TableCell
+                                                    padding="checkbox"
+                                                    onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                    <Checkbox
+                                                        color="primary"
+                                                        checked={isItemSelected}
+                                                        inputProps={{
+                                                            'aria-labelledby': labelId,
+                                                        }} />
+                                                </TableCell>
+                                                <TableCell
+                                                    onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}
+                                                    component="th"
+                                                    id={labelId}
+                                                    scope="row"
+                                                    padding="none"
+                                                    width={'20%'}
+                                                >
+                                                    {employee.firstName}
+                                                </TableCell>
+                                                <TableCell
+                                                    padding="none"
+                                                    width={'20%'}
+                                                    onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                    {employee.lastName}
+                                                </TableCell>
+                                                <TableCell
+                                                    padding="none"
+                                                    width={'20%'}
+                                                    onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                    {employee.email}
+                                                </TableCell>
+                                                <TableCell
+                                                    padding="none"
+                                                    width={'25%'}
+                                                    onClick={(event) => handleClick(event, (employee.id || "*error*").toString())}>
+                                                    {employee.phoneNumber}
+                                                </TableCell>
+                                                <TableCell padding="none" width={'15%'}>
+                                                    <RolesListForEmp employee={employee} employees={employees} setEmployees={setEmployees}
+                                                        tableRows={tableRows} setTableRows={setTableRows} />
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                }
+                                {emptyRows > 0 && (
+                                    <TableRow
+                                        style={{
+                                            height: (dense ? 33 : 53) * emptyRows,
+                                        }}
+                                    >
+                                        <TableCell colSpan={6} />
+                                    </TableRow>
+                                )}
+                            </TableBody>
                             }
-                            {emptyRows > 0 && (
-                                <TableRow
-                                    style={{
-                                        height: (dense ? 33 : 53) * emptyRows,
-                                    }}
-                                >
-                                    <TableCell colSpan={6} />
-                                </TableRow>
-                            )}
-                        </TableBody>
-                        }
-                    </Table>
-                </TableContainer>
+                        </Table>
+                    </TableContainer>
                 </div>
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
@@ -753,7 +801,7 @@ export const EmployeesPage = observer(() => {
         setValuePhoneEmp("");
         setRoleSelectKey(prev => prev + 1);
     }
-   
+
     const multiFilterSearchEmp = (arr: EmployeeDTO[], searchVal: string): EmployeeDTO[] => {
         const searchValLC = searchVal.toLowerCase();
         let filterByName = arr.filter((emp) => {
@@ -970,19 +1018,19 @@ export const EmployeesPage = observer(() => {
                     .filter((role) => role.toLowerCase().includes(freeSearchRole.toLowerCase()))
                     .map((role, index: number) => {
                         return (
-                        <ListItem component="div" disablePadding key={index.toString()}
-                            secondaryAction={
-                                <IconButton edge="end" aria-label="delete" style={{ marginLeft: "110px" }} onClick={(event) => {
-                                    deleteRole(role);
-                                }}
-                            >
-                                    <DeleteIcon />
-                                </IconButton>
-                            }>
-                            <ListItemButton>
-                                <ListItemText primary={`${role}`} />
-                            </ListItemButton>
-                        </ListItem>);
+                            <ListItem component="div" disablePadding key={index.toString()}
+                                secondaryAction={
+                                    <IconButton edge="end" aria-label="delete" style={{ marginLeft: "110px" }} onClick={(event) => {
+                                        deleteRole(role);
+                                    }}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                }>
+                                <ListItemButton>
+                                    <ListItemText primary={`${role}`} />
+                                </ListItemButton>
+                            </ListItem>);
                     })}
             </List>
         );
