@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { LoadingPaper } from '../components/Loading/LoadingPaper';
 import TimeTable, { ReqSlotCell } from '../components/TimeTable/TimeTable';
 import { ComponentStatus } from '../interfaces/common';
-import { PagesUrl } from '../interfaces/pages.meta';
 import { arrangementService } from '../services/arrangementService';
 import { companyService } from '../services/companyService';
 import { globalStore } from '../stores/globalStore';
@@ -100,7 +99,6 @@ export const PreferencesPage = observer(() => {
                             return;
                         }
                         arrangementService.sendPreference(preferenceStore.employeesPreferences[selectedEmployee.id]);
-                        navigate(PagesUrl.Emp_Arrangement);
                     }}
                 >
                     Submit

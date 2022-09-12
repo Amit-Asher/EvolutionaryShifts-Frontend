@@ -30,6 +30,7 @@ export class ControlFactory {
                     value={paramValue.value}
                     onChange={(e) => onChangeParam(param?.name || '', e.target.value)}
                     placeholder={param.name}
+                    size="small"
                     style={{ width: '300px', marginTop: '10px', marginRight: '15px' }}
                 />
             )
@@ -41,6 +42,7 @@ export class ControlFactory {
                     onChange={(e) => onChangeParam(param?.name || '', parseFloat(e.target.value))}
                     placeholder={param.name}
                     type="number"
+                    size="small"
                     style={{ width: '300px', marginTop: '10px', marginRight: '15px' }}
                 />
             )

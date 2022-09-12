@@ -23,7 +23,8 @@ export enum PagesUrl {
 
     // *******  Employee pages ******* //
     Emp_Preferences = '/emp/preferences',
-    Emp_Arrangement = '/emp/arrangement'
+    Emp_Arrangement = '/emp/arrangement',
+    Emp_Requests = '/emp/requests'
 }
 
 export interface SubTab {

@@ -45,6 +45,7 @@ import { companyService } from '../services/companyService';
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { globalStore } from '../stores/globalStore';
+import '../themes/employeePage.css';
 
 enum EmpsSubTab {
     Employees,
@@ -388,7 +389,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
                     id="tableTitle"
                     component="div"
                 >
-                    Employees
                 </Typography>
             )}
             {numSelected > 0 ? (
@@ -453,8 +453,7 @@ export const EmployeesPage = observer(() => {
                     style={{
                         width: "100%",
                         justifyContent: "center",
-                        display: "flex",
-                        paddingTop: '20px'
+                        display: "flex"
                     }}
                 >
                     <Typography variant="h6" gutterBottom component="div">

@@ -34,7 +34,8 @@ const categories = [
         id: 'Employees-portal',
         children: [
             { id: 'Preferences', icon: <CalendarMonthIcon />, active: false, url: PagesUrl.Emp_Preferences },
-            { id: 'Arrangement', icon: <PeopleIcon />, active: false, url: PagesUrl.Emp_Arrangement }
+            { id: 'Arrangement', icon: <PeopleIcon />, active: false, url: PagesUrl.Emp_Arrangement },
+            { id: 'Requests', icon: <PeopleIcon />, active: false, url: PagesUrl.Emp_Requests }
         ],
     },
     {

@@ -1,0 +1,8 @@
+.PhoneInputInput {
+    height: 39px;
+    border-radius: 5px;
+    border-width: 0.1px;
+    border-style: solid;
+    border-color: darkgray;
+    padding-left: 9px;
+}
